@@ -1,0 +1,4 @@
+node_modules/*
+static/CACHE/*
+static/src/output.css
+offset/__pycache__/*
