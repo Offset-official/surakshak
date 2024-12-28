@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="flex text-5xl font-bold text-black mb-5"> Stream Page</div>
+    <div class="flex flex-wrap justify-between">
+    <div class="w-[30%]">
+        <h1>CCTV 1</h1>
+        <img src="{% url 'video_feed' %}" class="stream-image">
+    </div>
+    <div class="w-[30%]">
+        <h1>CCTV 2</h1>
+        <img src="{% url 'video_feed' %}" class="stream-image">
+    </div>
+    <div class="w-[30%]">
+        <h1>CCTV 3</h1>
+        <img src="{% url 'video_feed' %}" class="stream-image">
+    </div>
+    <div class="w-[30%]">
+        <h1>CCTV 4</h1>
+        <img src="{% url 'video_feed' %}" class="stream-image">
+    </div>
+    <div class="w-[30%]">
+        <h1>CCTV 5</h1>
+        <img src="{% url 'video_feed' %}" class="stream-image">
+    </div>
+    <div class="w-[30%]">
+        <h1>CCTV 6</h1>
+        <img src="{% url 'video_feed' %}" class="stream-image">
+    </div>
+</div>
+{% endblock content %}
