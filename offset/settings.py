@@ -30,11 +30,10 @@ ALLOWED_HOSTS = []
 
 TAILWIND_APP_NAME = "surakshak"
 
-# NPM_BIN_PATH = r"C:/Program Files/nodejs/node_modules/npm"
 if platform == "win32":
     NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
 else:
-    pass
+    NPM_BIN_PATH = "/usr/local/bin/npm" # should work for linux and mac if not please change : )
 
 # Application definition
 
