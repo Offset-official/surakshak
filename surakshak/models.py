@@ -40,3 +40,11 @@ class Incident_to_Respondent(models.Model):
 
     incident_id = models.AutoField(primary_key = True)
     respondent_id = models.ForeignKey('Respondent', on_delete = models.CASCADE)
+
+class Camera(models.Model):
+
+    # id should be auto increment
+    name = models.CharField(max_length = 100)
+    id = models.AutoField(primary_key = True)
+    location = models.CharField(max_length = 100)
+    rtsp_url = models.CharField(max_length = 100)
