@@ -10,7 +10,7 @@
 6. For running the CCTVs, please follow the instructions of `RSTP-server`
 
 ## Wiki
-
-1. Declare your routes in `offset/urls.py` and define the routes in `offset/surakshak/views.py`.
+0. DO NOT NEED TO TOUCH `offset` FOLDER FOR MOST THINGS.
+1. Declare your routes in `surakshak/urls.py` and define the routes in `surakshak/views.py`.
 2. Use the `surakshak/templates/layout.html` as your HTML layout.
 3. Ensure that the docker container is running to host videos via RTSP locally. Please change the `rtsp_url` variable in `surakshak/views` accordingly. Some global hosted RSTP are commented which can be used for testing.
