@@ -1,7 +1,7 @@
 # Intellis
 
 ## How to run?
-
+0. These steps work on Python 3.12 (atleast).
 1. Create a venv - `python3 -m venv .venv`
 2. Source the venv - `source .venv/bin/activate` for Linux and `.venv/Scripts/activate` for Windows.
 3. Install dependencies - `pip install -r requirements.txt`
