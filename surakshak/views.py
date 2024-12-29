@@ -1,51 +1,50 @@
-from django.shortcuts import render
-from django.http import StreamingHttpResponse
-from django.views.decorators import gzip
-from .utils.camera import VideoCamera, gen
+# your_app/views.py
 
+from django.shortcuts import render
+from django.http import StreamingHttpResponse, HttpResponse
+from django.views.decorators import gzip
+from .utils.camera_manager import CameraManager
+import time
+from .models import Camera
 
 def homepage(request):
     return render(request, "homepage.html")
 
 
-# RTSP urls hosted on the internet for testing
-# rtsp_url = "rtsp://rtspstream:953083142923da6e035f35315bb1f820@zephyr.rtsp.stream/pattern"  # recording pattern
-# rtsp_url = "rtsp://rtspstream:d5ab2b139298242744eb19ac2b47854d@zephyr.rtsp.stream/movie"  ## big buck bunny
-
-# RTSP urls locally hosted
-# rtsp_url = "rtsp://your-ip-address>:8554/<video-name>" # rtsp stream template
-# examples
-# rtsp_url = "rtsp://192.168.29.10:8554/stream1"
-
-
 @gzip.gzip_page
-def video_feed(request, feed_number):
-    rtsp_urls = {
-        1: "rtsp://192.168.29.10:8554/stream1",
-        2: "rtsp://192.168.29.10:8554/stream2",
-        3: "rtsp://192.168.29.10:8554/stream3",
-    }
+def video_feed(request, camera_name):
+    # Define your stream names corresponding to feed_number
+    if not camera_name:
+        return HttpResponse("Invalid video feed", status=404)
+    camera = CameraManager.get_camera(camera_name)
 
-    rtsp_url = rtsp_urls.get(feed_number)
-
-    if not rtsp_url:
-        return StreamingHttpResponse("Invalid video feed", status=404)
+    if not camera:
+        return HttpResponse("Stream not found.", status=404)
 
     try:
-        cam = VideoCamera(rtsp_url)
         return StreamingHttpResponse(
-            gen(cam), content_type="multipart/x-mixed-replace; boundary=frame"
+            generate_frames(camera), content_type="multipart/x-mixed-replace; boundary=frame"
         )
     except Exception as e:
         print(f"Error in video feed: {str(e)}")
-        return StreamingHttpResponse("Error accessing video stream")
+        return HttpResponse("Error accessing video stream", status=500)
+
+
+def generate_frames(camera):
+    while True:
+        frame = camera.get_frame()
+        if frame:
+            yield (
+                b'--frame\r\n'
+                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
+            )
+        else:
+            # If no frame is available, wait briefly
+            time.sleep(0.1)
 
 
 def stream_page(request):
-    cctvs = [
-        1,
-        2,
-        3,
-    ]
-
-    return render(request, "stream.html", {"cctvs": cctvs})
+    # get names of 3 cameras
+    cctvs = Camera.objects.all()[:3]
+    cctvNames = [cctv.name for cctv in cctvs]
+    return render(request, "stream.html", {"cctvs": cctvNames})
