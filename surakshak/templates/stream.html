@@ -6,7 +6,7 @@
     {% for cctv in cctvs %}
     <div class="w-[30%]">
         <h1>CCTV Feed {{ cctv }}</h1>
-        <img src="{% url 'video_feed' feed_number=cctv %}" alt="CCTV {{ cctv }} Feed">
+        <img src="{% url 'video_feed' camera_name=cctv %}" alt="CCTV {{ cctv }} Feed">
     </div>
     {% endfor %}
 </div>
