@@ -5,3 +5,4 @@ static/src/output.css
 .DS_Store
 db.sqlite3
 .venv
+package-lock.json
