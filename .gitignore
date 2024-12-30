@@ -6,3 +6,4 @@ static/src/output.css
 db.sqlite3
 .venv
 package-lock.json
+project.log
