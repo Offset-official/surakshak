@@ -4,7 +4,7 @@ from surakshak.utils.inference_engine import InferenceEngine
 import threading
 import os 
 import logging 
-
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 class SurakshakConfig(AppConfig):
@@ -39,6 +39,8 @@ class SurakshakConfig(AppConfig):
             # inference for each camera will be in a separate thread
 
         initialize_cameras()
-        start_inference_engine()
+        if getattr(settings, 'INFERENCE_ENGINE', False):
+            logger.info("Starting inference engine")
+            start_inference_engine()
 
         

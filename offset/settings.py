@@ -180,4 +180,10 @@ LOGGING = {
             'propagate': True,
         },
     },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
 }
+
+INFERENCE_ENGINE = False
