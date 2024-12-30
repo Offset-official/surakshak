@@ -4,6 +4,9 @@ import imutils
 import numpy as np
 from surakshak.utils.camera_manager import VideoCamera
 import threading 
+from surakshak.utils.models.surakshak_yolo import infer_yolo
+from django.conf import settings
+import uuid
 
 logger = logging.getLogger("inference")
 
@@ -26,11 +29,23 @@ def intrusion_detector(frame):
     This function will be called whenever motion is detected.
     """
     logger.info("Running yolo on suspicious frame...")
-    # Example: If you had a function `my_inference_model(frame)`,
-    # you could call it here:
-    # result = my_inference_model(frame)
-    # logging.info("Model output: %s", result)
-    pass
+    output_image, outputs = infer_yolo(frame)
+    human_detected = False
+    for output in outputs:
+        if output["object"] == "person":
+            human_detected = True
+            break
+    if human_detected:
+        logger.critical("Human detected! Entering Intrusion Mode.")
+        output_image_name = str(uuid.uuid4()) + ".jpg"
+        cv2.imwrite(settings.MEDIA_ROOT + output_image_name, output_image)
+        # save image somewhere
+        # start recording 5s clip of incident
+        # create incident in database with image reference and intrusion details
+        # ask all cameras to stop inference for some time
+        # system should enter a lockdown mode
+        # once lockdown mode is over, return to normal operation
+    
 
 def motion_detector(
     frame_generator,
@@ -80,11 +95,8 @@ def motion_detector(
         # If motion is detected, call another model (inference, etc.)
         if motion_detected:
             logger.info(f"Frame {idx}: Motion detected.")
+            # should we also save all instances where motion was detected?
             intrusion_detector(current_frame)
-        # else:
-        #     logging.info(f"Frame {idx}: No motion detected.")
-
-        # Update previous frame
         prev_frame = gray
 
     logger.info("Motion detection ended.")
@@ -104,12 +116,8 @@ class InferenceEngine:
 
     @classmethod
     def start(cls):
-        # Define your RTSP streams here
         from surakshak.utils.camera_manager import CameraManager
         for camera in list(CameraManager._cameras.values())[:1]:
             camera_inference_engine = CameraInferenceEngine(camera)
             cls.camera_inference_engines.append(camera_inference_engine)
         
-    @classmethod
-    def infer_frames(cls, frame_generator):
-        motion_detector(frame_generator)

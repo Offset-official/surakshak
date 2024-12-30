@@ -28,6 +28,7 @@ class VideoCamera:
             if ret:
                 with self.lock:
                     self.frame = image
+                time.sleep(0.1)
             else:
                 logger.info(f"Failed to read frame from {self.rtsp_url}")
                 self.video.release()
