@@ -7,3 +7,4 @@ db.sqlite3
 .venv
 package-lock.json
 project.log
+media/
