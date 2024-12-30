@@ -16,3 +16,10 @@
 3. Ensure that the docker container is running to host videos via RTSP locally. Please change the `rtsp_url` variable in `surakshak/views` accordingly. Some global hosted RSTP are commented which can be used for testing.
 4. Super user creds: `id: offset` and `pass: offset`
 5. Add your cameras by going to `/admin` in browser. Camera information is stored in the db.
+6. Set `INFERENCE_ENGINE = False` in `settings.py` to disable it.
+7. `print()` is not working in some scripts. Use the following snippet for debugging - 
+```python
+import logging 
+logger = logging.getlogger(__name__)
+logger.info("YOUR DEBUG MESSAGE")
+```  
