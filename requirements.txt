@@ -3,3 +3,4 @@ django-tailwind
 django-tailwind[reload]
 opencv-python
 imutils
+onnxruntime
