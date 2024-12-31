@@ -18,8 +18,8 @@ class SurakshakConfig(AppConfig):
             return
 
         # Define your RTSP streams here
-        from .models import Camera
-        cameras = Camera.objects.all()
+        from .models import Cameras
+        cameras = Cameras.objects.all()
         streams = []
         for camera in cameras:
             stream = {
