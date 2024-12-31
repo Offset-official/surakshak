@@ -4,14 +4,18 @@ from django.utils import timezone
 
 class Incidents_types(models.Model):
 
-    INCIDENT_TYPES = {
-        "T" : "Tresspassing",
-        "F" : "Fire",
-        "S" : "Suspicious",
-    }
+    INCIDENT_TYPES = [
+        ("T", "Tresspassing"),
+        ("F", "Fire"),
+        ("S", "Suspicious"),
+    ]
 
-    id = models.AutoField(primary_key = True)
-    incident_type = models.CharField(max_length = 1, choices = INCIDENT_TYPES.items())
+    id = models.AutoField(primary_key=True)
+    incident_type = models.CharField(max_length=1, choices=INCIDENT_TYPES)
+
+    # To display the incident type instead of object representation
+    def __str__(self):
+        return self.incident_type
 
 class Incident(models.Model):
 

@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="flex text-5xl font-bold text-black mb-5">Respondents</div>
+    <table class="table">
+        <tr>
+            {% for k in headers %}
+                <th>{{ k }}</th>
+            {% endfor %}
+        </tr>
+        <tbody>
+            {% for respondent in respondents %}
+                <tr>
+                    <td>{{ respondent.id }}</td>
+                    <td>{{ respondent.group }}</td>
+                    <td>{{ respondent.name }}</td>
+                    <td>{{ respondent.phone }}</td>
+                    <td>{{ respondent.email }}</td>
+                    <td>{{ respondent.is_active }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}

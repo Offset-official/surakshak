@@ -5,7 +5,7 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.views.decorators import gzip
 from .utils.camera_manager import CameraManager
 import time
-from .models import Cameras
+from .models import *
 
 def homepage(request):
     return render(request, "homepage.html")
@@ -48,3 +48,10 @@ def stream_page(request):
     cctvs = Cameras.objects.all()[:3]
     cctvNames = [cctv.name for cctv in cctvs]
     return render(request, "stream.html", {"cctvs": cctvNames})
+
+
+def respondents_page(request):
+    return render(request, "settings/respondents.html", {
+        "headers" : ["ID", "Group", "Name", "Phone", "Email", "Active"],
+        "respondents" : Respondents.objects.all()
+    })
