@@ -45,6 +45,6 @@ def generate_frames(camera):
 
 def stream_page(request):
     # get names of 3 cameras
-    cctvs = Camera.objects.all()[:3]
+    cctvs = Cameras.objects.all()[:3]
     cctvNames = [cctv.name for cctv in cctvs]
     return render(request, "stream.html", {"cctvs": cctvNames})
