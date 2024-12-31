@@ -2,23 +2,28 @@
 
 {% block content %}
     <div class="flex text-5xl font-bold text-black mb-5">Respondents</div>
-    <table class="table">
-        <tr>
-            {% for k in headers %}
-                <th>{{ k }}</th>
-            {% endfor %}
-        </tr>
-        <tbody>
-            {% for respondent in respondents %}
-                <tr>
-                    <td>{{ respondent.id }}</td>
-                    <td>{{ respondent.group }}</td>
-                    <td>{{ respondent.name }}</td>
-                    <td>{{ respondent.phone }}</td>
-                    <td>{{ respondent.email }}</td>
-                    <td>{{ respondent.is_active }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <body>
+        <table class="table">
+            <tr>
+                {% for k in headers %}
+                    <th>{{ k }}</th>
+                {% endfor %}
+            </tr>
+            <tbody>
+                {% for respondent in respondents %}
+                    <tr>
+                        <td>{{ respondent.id }}</td>
+                        <td>{{ respondent.group }}</td>
+                        <td>{{ respondent.name }}</td>
+                        <td>{{ respondent.phone }}</td>
+                        <td>{{ respondent.email }}</td>
+                        <td>{{ respondent.is_active }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="mt-10">
+            <a href="add/"><button class="p-3 bg-rose-500 rounded-lg font-semibold hover:bg-rose-600 text-white transition-all duration-200" >Add</button></a>
+        </div>
+    </body>
 {% endblock content %}

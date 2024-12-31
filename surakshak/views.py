@@ -1,6 +1,6 @@
 # your_app/views.py
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import StreamingHttpResponse, HttpResponse
 from django.views.decorators import gzip
 from .utils.camera_manager import CameraManager
@@ -88,7 +88,8 @@ def add_respondent(request):
             # Handle the case where the group ID is invalid
             return HttpResponse("Invalid incident type selected", status=400)
         
-    return render(request, 'settings/respondents.html', {
-        "respondents": Respondents.objects.all(),
-    })
+    # return render(request, 'settings/respondents.html', {
+    #     "respondents": Respondents.objects.all(),
+    # })
+    return redirect("respondents_page")
 
