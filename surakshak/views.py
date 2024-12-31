@@ -5,7 +5,7 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.views.decorators import gzip
 from .utils.camera_manager import CameraManager
 import time
-from .models import Camera
+from .models import Cameras
 
 def homepage(request):
     return render(request, "homepage.html")
