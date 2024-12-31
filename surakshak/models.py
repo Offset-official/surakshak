@@ -36,6 +36,9 @@ class Respondents(models.Model):
     email = models.EmailField(max_length = 100)
     is_active = models.BooleanField(default = True)
 
+    def __str__(self):
+        return f"{self.name}, {self.phone}, {self.email}, {self.is_active}"
+
 
 class Cameras(models.Model):
 

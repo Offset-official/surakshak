@@ -50,8 +50,45 @@ def stream_page(request):
     return render(request, "stream.html", {"cctvs": cctvNames})
 
 
+## For respondents settings page
+
 def respondents_page(request):
     return render(request, "settings/respondents.html", {
         "headers" : ["ID", "Group", "Name", "Phone", "Email", "Active"],
         "respondents" : Respondents.objects.all()
     })
+
+def respondent_reg_page(request):
+
+    incidents = Incidents_types.objects.all()
+    return render(request, "settings/respondent_registration.html", {'incidents': incidents})
+
+def add_respondent(request):
+    if request.method == "POST":
+        group_id = request.POST.get("group")  # This gets the ID as a string
+        name = request.POST.get("name")
+        phone = request.POST.get("phone")
+        email = request.POST.get("email")
+        is_active = request.POST.get("is_active") == "on"  # Handle checkbox correctly
+        
+        try:
+            # Fetch the Incidents_types instance
+            group = Incidents_types.objects.get(id=group_id)
+            
+            # Create a new Respondents record
+            record = Respondents(
+                group=group,
+                name=name,
+                phone=phone,
+                email=email,
+                is_active=is_active
+            )
+            record.save()
+        except Incidents_types.DoesNotExist:
+            # Handle the case where the group ID is invalid
+            return HttpResponse("Invalid incident type selected", status=400)
+        
+    return render(request, 'settings/respondents.html', {
+        "respondents": Respondents.objects.all(),
+    })
+

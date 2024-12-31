@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <body>
+        <form name="add_respondent", method="post", action="add_respondent/">
+            {% csrf_token %}
+            <pre>
+                <div class="flex text-5xl font-bold text-black mb-5">Add Respondent</div>
+                <select name="group" id="group" required>
+                    {% for incident in incidents %}
+                        <option value="{{ incident.id }}">{{ incident.incident_type }}</option>
+                    {% endfor %}
+                </select>
+                <label for="name">Name</label>
+                <input type="text" name="name" id="name" required>
+                <label for="phone">Phone</label>
+                <input type="text" name="phone" id="phone" required>
+                <label for="email">Email</label>
+                <input type="email" name="email" id="email" required>
+                <label for="is_active">Is Active</label>
+                <input type="checkbox" name="is_active" id="is_active">
+                <button type="submit">Add Respondent</button> 
+            </pre>
+        </form>
+    </body>
+{% endblock content %}
