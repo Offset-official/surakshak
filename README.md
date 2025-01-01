@@ -7,7 +7,7 @@
 3. Install dependencies - `pip install -r requirements.txt`
 4. Install node.js and run `npm i`
 5. Run `python manage.py makemigrations` and `python manage.py migrate`. Open 2 terminals. Run `python3 manage.py runserver` for running Django in one terminal and run `python manage.py tailwind start` for enabling Tailwind with Hot Reload. 
-6. For running the CCTVs, please follow the instructions of `RSTP-server`
+6. For running the CCTVs, please follow the instructions of `RTSP-server`
 
 ## Wiki
 0. DO NOT NEED TO TOUCH `offset` FOLDER FOR MOST THINGS.
