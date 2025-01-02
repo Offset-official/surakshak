@@ -1,22 +1,96 @@
-{% load static %}
-{% load static tailwind_tags %}
+{% load static %} {% load static tailwind_tags %}
 <!DOCTYPE html>
 <html lang="en">
-	<head>
+  <head>
     <title>Surakshak</title>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<meta http-equiv="X-UA-Compatible" content="ie=edge">
-		{% tailwind_preload_css %}  {% tailwind_css %}
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
-		{% block styling %}{% endblock %}
-	</head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    {% tailwind_preload_css %} {% tailwind_css %}
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    {% block styling %}{% endblock %}
+  </head>
 
-	<body class="bg-gray-100 text-black font-sans p-12">
-		<!-- <div class=""> -->
-        {% block content %}
-        {% endblock content %}
-		{% block script %} {% endblock %}
-		<!-- </div> -->
-	</body>
+  <body class="bg-primaryBg text-textColor font-sans p-10">
+    <!-- <div class=""> -->
+      <div class="flex justify-between w-full items-center">
+        <a class="flex gap-4" href="/">
+          <div class="h-full">
+            <img src="{% static '/logo.svg' %}" alt="logo" class="w-20 h-20" />
+          </div>
+          <div class="flex flex-col justify-center">
+            <div class="text-5xl font-bold">Surakshak</div>
+            <div class="text-lg ">A Smart Security System for Institutions</div>
+          </div>
+        </a>
+        <div class=""> 
+          <label class="inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              class="sr-only peer"
+              onchange="toggleState(this.checked)"
+            />
+            <span
+              class="mr-3 font-normal text-gray-900 dark:text-gray-300"
+              id="toggle-label"
+            >
+              Inactive
+            </span>
+            <div class="relative w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primaryHighlight dark:peer-focus:ring-primaryHighlight rounded-full peer dark:bg-accent peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-green-500"></div>
+          </label>
+        </div>
+      </div>
+    {% block content %} {% endblock content %} {% block script %} {% endblock %}
+    <!-- </div> -->
+	<div class="text-textColor opacity-15 absolute bottom-3 right-1/2 transform translate-x-1/2 font-thin">Surakshak &copy; 2025 All Rights Reserved.</div>
+ 
+</body>
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    try {
+      const response = await fetch("{% url 'toggle_status' %}", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      if (data.success) {
+        const toggleState = data.state;
+        const toggleInput = document.querySelector("input[type='checkbox']");
+        const toggleLabel = document.getElementById("toggle-label");
+        toggleInput.checked = toggleState;
+        toggleLabel.innerText = toggleState ? "Active" : "Inactive";
+      }
+    } catch (error) {
+      console.error("Error fetching toggle state:", error);
+    }
+  });
+  
+  async function toggleState(state) {
+    try {
+      const response = await fetch("{% url 'toggle_status' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify({ state: state }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        document.getElementById("toggle-label").innerText = state
+          ? "Active"
+          : "Inactive";
+      } else {
+        console.error(data.error);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+</script>
 </html>

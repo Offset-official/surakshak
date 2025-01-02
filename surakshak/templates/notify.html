@@ -1,0 +1,51 @@
+{% extends "layout1.html" %}
+
+{% block content %}
+<div class="flex text-5xl font-bold mb-5">Notify</div>
+<div class="flex text-xl my-10">This is a sample page for testing notifications. This will be used later to notify manually. The only options will be the different groups. </div>
+<div class="max-w-md mx-auto bg-primaryHighlight shadow-md rounded-lg p-6 space-y-4">
+    <button
+      class="w-full py-2 px-4 bg-primaryBg text-white rounded hover:bg-accent"
+      onclick="sendNotification({modes:['sms','whatsapp','call','email'],incident_groups:['trespassing']})"
+    >
+      send to trespassing group (all modes)
+    </button>
+    <button
+      class="w-full py-2 px-4 bg-primaryBg text-white rounded hover:bg-accent"
+      onclick="sendNotification({modes:[],incident_groups:['trespassing','fire']})"
+    >
+        send to trespassing and fire group (all modes)
+    </button>
+    <button
+      class="w-full py-2 px-4 bg-primaryBg text-white rounded hover:bg-accent"
+      onclick="sendNotification({modes:['sms'],incident_groups:[]})"
+    >
+      send to all groups (sms only)
+    </button>
+  </div>
+
+  
+  <script>
+    async function sendNotification(data) {
+
+      try {
+        const response = await fetch("{% url 'notify_api' %}", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify(data),
+          });
+          const result = await response.json();
+        if (result.success) {
+          alert(`Notification sent!`);
+        } else {
+          alert(`Failed to send notifications: ${result.error}`);
+        }
+      } catch (error) {
+        alert(`Error sending notifications: ${error}`);
+      }
+    }
+  </script>
+{% endblock content %}

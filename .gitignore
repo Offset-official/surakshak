@@ -3,8 +3,8 @@ static/CACHE/*
 static/src/output.css
 **/__pycache__/*
 .DS_Store
-db.sqlite3
 .venv
 package-lock.json
 project.log
 media/
+/.env

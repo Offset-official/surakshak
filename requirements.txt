@@ -4,3 +4,6 @@ django-tailwind[reload]
 opencv-python
 imutils
 onnxruntime
+python-dotenv
+djangorestframework
+twilio
