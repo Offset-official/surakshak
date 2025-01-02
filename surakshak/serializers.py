@@ -1,15 +1,15 @@
 from rest_framework import serializers
-from .models import Incident, Respondent
+from .models import *
 
 
 class IncidentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Incident
         fields = [
-            "incident_id",
+            "id",
             "created_at",
-            "type",
-            "camera_id",
+            "incident_type",
+            "camera",
             "resolved",
             "resolver",
         ]
@@ -20,9 +20,27 @@ class RespondentSerializer(serializers.ModelSerializer):
         model = Respondent
         fields = [
             "id",
-            "group",
+            "incident_type",
             "name",
             "phone",
             "email",
             "is_active",
+        ]
+
+class IncidentTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IncidentType
+        fields = [
+            "incident_code",
+            "incident_name",
+        ]
+
+class CameraSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Camera
+        fields = [
+            "id",
+            "name",
+            "location",
+            "rtsp_url",
         ]
