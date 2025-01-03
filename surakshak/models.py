@@ -3,12 +3,11 @@ from django.utils.timezone import now
 
 
 class IncidentType(models.Model):
-
-    type_code = models.CharField(max_length=1, unique=True)  # e.g., "T", "F", "S"
     type_name = models.CharField(max_length=50)  # e.g., "Trespassing", "Fire"
+    respondents = models.ManyToManyField("Respondent", related_name="incident_types")  # Respondents for this type
 
     def __str__(self):
-        return f"{self.type_code}: {self.type_name}"
+        return f"{self.type_name}"
 
 
 class Camera(models.Model):
@@ -23,14 +22,13 @@ class Camera(models.Model):
 
 class Respondent(models.Model):
     id = models.AutoField(primary_key=True)
-    incident_type = models.ManyToManyField("IncidentType")  
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=10)
     email = models.EmailField(max_length=100)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.name}"
+        return self.name
 
 
 class Incident(models.Model):

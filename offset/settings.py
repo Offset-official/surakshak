@@ -47,7 +47,7 @@ if platform == "win32":
     NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
 else:
     NPM_BIN_PATH = (
-        "/usr/local/bin/npm"  # should work for linux and mac if not please change : )
+        "/opt/homebrew/bin/npm"  # should work for linux and mac if not please change : )
     )
 
 # Application definition

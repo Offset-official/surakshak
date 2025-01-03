@@ -20,7 +20,6 @@ class RespondentSerializer(serializers.ModelSerializer):
         model = Respondent
         fields = [
             "id",
-            "incident_type",
             "name",
             "phone",
             "email",
@@ -31,8 +30,8 @@ class IncidentTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = IncidentType
         fields = [
-            "incident_code",
-            "incident_name",
+            "type_name",
+            "respondents",
         ]
 
 class CameraSerializer(serializers.ModelSerializer):
