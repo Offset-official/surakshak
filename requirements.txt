@@ -8,3 +8,4 @@ python-dotenv
 djangorestframework
 twilio
 python-dotenv
+django-widget-tweaks
