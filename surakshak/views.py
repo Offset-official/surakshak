@@ -182,11 +182,12 @@ def respondents_page(request):
 
 def add_respondent(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        name = data.get("name")
-        phone = data.get("phone")
-        email = data.get("email")
-        active = data.get("active", False)
-        respondent = Respondent.objects.create(name=name, phone=phone, email=email, active=active)
+        name = request.POST.get("name")
+        phone = request.POST.get("phone")
+        email = request.POST.get("email")
+        active = request.POST.get("is_active") == "on"
+        respondent = Respondent.objects.create(name=name, phone=phone, email=email, is_active=active)
+
+        respondent.save()
         
     return redirect('respondents_page')
