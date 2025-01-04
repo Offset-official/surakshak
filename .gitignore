@@ -8,4 +8,6 @@ package-lock.json
 project.log
 media/
 /.env
-./surakshak/static/css/dist/styles.css
+surakshak/migrations/
+surakshak/static/css/dist/styles.css
+db.sqlite3
