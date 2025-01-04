@@ -42,6 +42,7 @@ class IncidentAdmin(admin.ModelAdmin):
 
 class CameraAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'location', 'rtsp_url')
+    # disable url checks
 
 class IncidentTypeAdmin(admin.ModelAdmin):
     list_display = ('type_name', 'respondents_display')  # Custom display for respondents
@@ -64,3 +65,4 @@ admin.site.register(Camera, CameraAdmin)
 admin.site.register(Incident, IncidentAdmin)
 admin.site.register(IncidentType, IncidentTypeAdmin)
 admin.site.register(InferenceSchedule)
+admin.site.register(Log)
