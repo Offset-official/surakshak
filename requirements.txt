@@ -7,3 +7,4 @@ onnxruntime
 python-dotenv
 djangorestframework
 twilio
+python-dotenv
