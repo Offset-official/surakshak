@@ -1,6 +1,99 @@
 {% extends "layout1.html" %}
 
 {% block content %}
-<div class="flex text-5xl font-bold mb-5">Logs Page</div>
+<div class="flex text-5xl font-bold mb-8">Logs Page</div>
+
+<!-- Logs Table -->
+<div class="overflow-x-auto">
+    <table id="logsTable" class="min-w-full divide-y divide-gray-700">
+        <thead class="bg-primaryHighlight">
+            <tr>
+                <th class="px-6 py-3 text-left text-md font-bold text-gray-300 uppercase tracking-wider w-10p">ID</th>
+                <th class="px-6 py-3 text-left text-md font-bold text-gray-300 uppercase tracking-wider w-10p">Created At</th>
+                <th class="px-6 py-3 text-left text-md font-bold text-gray-300 uppercase tracking-wider w-70p">Log</th>
+            </tr>
+        </thead>
+        <tbody class="bg-primaryHighlight divide-y divide-gray-700">
+            {% for log in logs %}
+            <tr class="{% if forloop.counter > 50 %}hidden{% endif %}">
+                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-100">{{ log.id }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-100">{{ log.created_at }}</td>
+                <td class="px-6 py-4 whitespace-pre-wrap text-xs text-gray-100">{{ log.log }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">No logs available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination Controls -->
+<div id="paginationControls" class="mt-4 flex justify-center items-center space-x-4">
+    <button id="prevPage" class="px-4 py-2 bg-gray-700 text-gray-200 rounded disabled:opacity-50" disabled>Prev</button>
+    <span id="pageInfo" class="text-lg">Page 1</span>
+    <button id="nextPage" class="px-4 py-2 bg-gray-700 text-gray-200 rounded">Next</button>
+</div>
+
+<!-- JavaScript for Pagination -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const rows = document.querySelectorAll('#logsTable tbody tr');
+        const rowsPerPage = 50;
+        let currentPage = 1;
+        const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+        const prevButton = document.getElementById('prevPage');
+        const nextButton = document.getElementById('nextPage');
+        const pageInfo = document.getElementById('pageInfo');
+
+        function showPage(page) {
+            // Validate page number
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+
+            // Hide all rows
+            rows.forEach((row) => {
+                row.classList.add('hidden');
+            });
+
+            // Calculate start and end indices
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+
+            // Show rows for the current page
+            for (let i = start; i < end && i < rows.length; i++) {
+                rows[i].classList.remove('hidden');
+            }
+
+            // Update page info
+            pageInfo.innerText = `Page ${page} of ${totalPages}`;
+
+            // Update button states
+            prevButton.disabled = page === 1;
+            nextButton.disabled = page === totalPages;
+
+            // Update current page
+            currentPage = page;
+        }
+
+        // Initial page display
+        showPage(currentPage);
+
+        // Event listeners for buttons
+        prevButton.addEventListener('click', function () {
+            if (currentPage > 1) {
+                showPage(currentPage - 1);
+            }
+        });
+
+        nextButton.addEventListener('click', function () {
+            if (currentPage < totalPages) {
+                showPage(currentPage + 1);
+            }
+        });
+    });
+</script>
 
 {% endblock content %}

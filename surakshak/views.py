@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from django.templatetags.static import static
 import logging 
 # import model form 
-from .models import InferenceSchedule
+from .models import InferenceSchedule, Log
 from django.forms import ModelForm
 from django import forms
 
@@ -66,7 +66,8 @@ def notify_page(request):
 
 
 def logs_page(request):
-    return render(request, "logs.html")
+    logs = Log.objects.all().order_by("-created_at")
+    return render(request, "logs.html", {"logs": logs})
 
 
 def settings(request):
