@@ -1,47 +1,43 @@
 from django.db import models
-from django.utils import timezone
+from django.utils.timezone import now
 
 
-# TODO add logs model too.
-class Incidents_types(models.Model):
+class IncidentType(models.Model):
+    type_name = models.CharField(max_length=50)  # e.g., "Trespassing", "Fire"
+    respondents = models.ManyToManyField("Respondent", related_name="incident_types")  # Respondents for this type
 
-    INCIDENT_TYPES = {
-        "T": "Tresspassing",
-        "F": "Fire",
-        "S": "Suspicious",
-    }
+    def __str__(self):
+        return f"{self.type_name}"
 
+
+class Camera(models.Model):
     id = models.AutoField(primary_key=True)
-    incident_type = models.CharField(max_length=1, choices=INCIDENT_TYPES.items())
+    name = models.CharField(max_length=100, unique=True)
+    location = models.CharField(max_length=100)
+    rtsp_url = models.URLField(max_length=200)  # Updated to URLField for clarity
 
-
-class Incident(models.Model):
-
-    incident_id = models.AutoField(
-        primary_key=True
-    )  # rename this to id for consistency
-    created_at = models.DateTimeField(timezone.now)
-    type = models.ForeignKey(
-        "Incidents_types", on_delete=models.CASCADE
-    )  # rename this to something else, type is a reserved keyword and causes errors when used as a field name
-    camera_id = models.ForeignKey("Camera", on_delete=models.CASCADE)
-    resolved = models.BooleanField(default=False)
-    resolver = models.ForeignKey("Respondent", on_delete=models.CASCADE, null=True)
+    def __str__(self):
+        return self.name
 
 
 class Respondent(models.Model):
-
     id = models.AutoField(primary_key=True)
-    group = models.ForeignKey("Incidents_types", on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=10)
     email = models.EmailField(max_length=100)
     is_active = models.BooleanField(default=True)
 
+    def __str__(self):
+        return self.name
 
-class Camera(models.Model):
 
+class Incident(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100, unique=True)
-    location = models.CharField(max_length=100)
-    rtsp_url = models.CharField(max_length=100)
+    created_at = models.DateTimeField(default=now)  
+    incident_type = models.ForeignKey("IncidentType", on_delete=models.CASCADE, null=True)  
+    camera = models.ForeignKey("Camera", on_delete=models.CASCADE) 
+    resolved = models.BooleanField(default=False)
+    resolver = models.ForeignKey("Respondent", on_delete=models.CASCADE, null=True, blank=True)  
+
+    def __str__(self):
+        return f"Incident {self.id} - {self.incident_type}"
