@@ -7,6 +7,7 @@ import os
 import logging
 from django.conf import settings
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -30,6 +31,14 @@ class SurakshakConfig(AppConfig):
         for camera in cameras:
             stream = {"name": camera.name, "url": camera.rtsp_url}
             streams.append(stream)
+
+        from .models import InferenceSchedule
+
+        if InferenceSchedule.objects.all().count() == 0:
+            InferenceSchedule.objects.create(
+                start_time="00:00", end_time="23:59", 
+                monday=True, tuesday=True, wednesday=True, thursday=True, friday=True, saturday=True, sunday=True
+            )
 
         def initialize_cameras():
             for stream in streams[:2]:

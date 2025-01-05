@@ -12,7 +12,13 @@ from twilio.rest import Client
 import os
 from dotenv import load_dotenv
 from django.templatetags.static import static
+import logging 
+# import model form 
+from .models import InferenceSchedule, Log
+from django.forms import ModelForm
+from django import forms
 
+logger = logging.getLogger(__name__)
 
 def homepage(request):
     return render(request, "homepage.html")
@@ -60,7 +66,8 @@ def notify_page(request):
 
 
 def logs_page(request):
-    return render(request, "logs.html")
+    logs = Log.objects.all().order_by("-created_at")
+    return render(request, "logs.html", {"logs": logs})
 
 
 def settings(request):
@@ -74,6 +81,7 @@ def toggle_status(request):
             data = json.loads(request.body)
             state = data.get("state", False)
             request.session["toggle_state"] = state
+            logger.info(state)
             if state:
                 pass
                 # Subham you may start your inference engine here
@@ -170,3 +178,45 @@ def notify_api(
     return JsonResponse(
         {"success": False, "error": "Invalid request method"}, status=405
     )
+
+
+def timings_page(request):
+    # create model form 
+    class InferenceScheduleForm(ModelForm):
+        class Meta:
+            model = InferenceSchedule
+            fields = "__all__" 
+            widgets = {
+                'start_time': forms.TimeInput(attrs={'type': 'time'}),
+                'end_time': forms.TimeInput(attrs={'type': 'time'}),
+                'monday': forms.CheckboxInput(),
+                'tuesday': forms.CheckboxInput(),
+                'wednesday': forms.CheckboxInput(),
+                'thursday': forms.CheckboxInput(),
+                'friday': forms.CheckboxInput(),
+                'saturday': forms.CheckboxInput(),
+                'sunday': forms.CheckboxInput(),
+            }  
+
+
+    schedule = InferenceSchedule.objects.get(pk=1)
+    
+    if request.method == "POST":
+        form = InferenceScheduleForm(request.POST, instance=schedule)
+        if form.is_valid():
+            form.save()
+            return render(request, "timings.html", {"form": form, "success": True})
+        return JsonResponse({"success": False, "error": form.errors}, status=400)
+    elif request.method == "GET":
+        form = InferenceScheduleForm(instance=schedule)
+        # render the form
+        return render(request, "timings.html", {"form": form})
+
+
+
+
+
+    inferenceSchedule = form.objects.get(pk=1)
+
+
+    return render(request, "timings.html")

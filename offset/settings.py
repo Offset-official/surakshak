@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "tailwind",
     "surakshak",
     "django_browser_reload",
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [

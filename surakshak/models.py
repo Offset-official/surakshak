@@ -41,3 +41,32 @@ class Incident(models.Model):
 
     def __str__(self):
         return f"Incident {self.id} - {self.incident_type}"
+
+class InferenceSchedule(models.Model):
+    id = models.AutoField(primary_key=True)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    # checkboxes for days
+    monday = models.BooleanField(default=True)
+    tuesday = models.BooleanField(default=True)
+    wednesday = models.BooleanField(default=True)
+    thursday = models.BooleanField(default=True)
+    friday = models.BooleanField(default=True)
+    saturday = models.BooleanField(default=True)
+    sunday = models.BooleanField(default=True)
+
+    # add constrint that only 1 item can be in the model
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(id=1), name="single_inference_schedule"
+            )
+        ]
+    
+class Log(models.Model):
+    id = models.AutoField(primary_key=True)
+    created_at = models.DateTimeField(default=now)
+    log = models.TextField()
+
+    def __str__(self):
+        return f"Log {self.id}"
