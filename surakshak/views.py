@@ -17,6 +17,7 @@ import logging
 from .models import InferenceSchedule, Log
 from django.forms import ModelForm
 from django import forms
+from surakshak.utils.system_config import SystemConfig
 
 logger = logging.getLogger(__name__)
 
@@ -78,20 +79,12 @@ def settings(request):
 def toggle_status(request):
     if request.method == "POST":
         try:
-            data = json.loads(request.body)
-            state = data.get("state", False)
-            request.session["toggle_state"] = state
-            logger.info(state)
-            if state:
-                pass
-                # Subham you may start your inference engine here
-            return JsonResponse({"success": True, "state": state})
+            SystemConfig.toggle()
+            return JsonResponse({"success": True, "state": SystemConfig.instrusion_state in ("ACTIVE")})
         except Exception as e:
             return JsonResponse({"success": False, "error": str(e)}, status=500)
     elif request.method == "GET":
-        # Return the stored state
-        state = request.session.get("toggle_state", False)
-        return JsonResponse({"success": True, "state": state})
+        return JsonResponse({"success": True, "state": SystemConfig.instrusion_state in ("ACTIVE")})
     return JsonResponse(
         {"success": False, "error": "Invalid request method"}, status=405
     )
