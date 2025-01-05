@@ -14,7 +14,7 @@ class Camera(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True)
     location = models.CharField(max_length=100)
-    rtsp_url = models.URLField(max_length=200)  # Updated to URLField for clarity
+    rtsp_url = models.CharField(max_length=200)  # Updated to URLField for clarity
 
     def __str__(self):
         return self.name
