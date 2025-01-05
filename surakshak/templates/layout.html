@@ -1,4 +1,5 @@
-{% load static %} {% load static tailwind_tags %}
+{% load static %}
+{% load static tailwind_tags %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -6,7 +7,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    {% tailwind_preload_css %} {% tailwind_css %}
+    {% tailwind_preload_css %}
+    {% tailwind_css %}
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap"
       rel="stylesheet"
@@ -14,83 +16,205 @@
     {% block styling %}{% endblock %}
   </head>
 
-  <body class="bg-primaryBg text-textColor font-sans p-10">
-    <!-- <div class=""> -->
-      <div class="flex justify-between w-full items-center">
-        <a class="flex gap-4" href="/">
-          <div class="h-full">
-            <img src="{% static '/logo.svg' %}" alt="logo" class="w-20 h-20" />
-          </div>
-          <div class="flex flex-col justify-center">
-            <div class="text-5xl font-bold">Surakshak</div>
-            <div class="text-lg ">A Smart Security System for Institutions</div>
-          </div>
-        </a>
-        <div class=""> 
+  <body class="bg-primaryBg text-textColor font-sans p-10 relative">
+    <!-- Header Section -->
+    <div class="flex justify-between w-full items-center">
+      <a class="flex gap-4" href="/">
+        <div class="h-full">
+          <img src="{% static 'logo.svg' %}" alt="logo" class="w-20 h-20" />
+        </div>
+        <div class="flex flex-col justify-center">
+          <div class="text-5xl font-bold">Surakshak</div>
+          <div class="text-lg">A Smart Security System for Institutions</div>
+        </div>
+      </a>
+      <div class="flex items-center space-x-6">
+        <!-- Heartbeat Indicator -->
+        <div class="relative">
+          <svg
+            id="heartbeat-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 text-gray-400 transition-colors duration-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 
+                 C2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 
+                 4.5 2.09C13.09 3.81 14.76 3 
+                 16.5 3 19.58 3 22 5.42 22 8.5
+                 c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            />
+          </svg>
+          <!-- Tooltip -->
+          <span
+            id="heartbeat-tooltip"
+            class="absolute bottom-full mb-2 hidden px-2 py-1 bg-gray-700 text-white text-xs rounded"
+          >
+            System is functional
+          </span>
+        </div>
+
+        <!-- Toggle Button -->
+        <div>
           <label class="inline-flex items-center cursor-pointer">
             <input
               type="checkbox"
               class="sr-only peer"
               onchange="toggleState(this.checked)"
+              id="status-toggle"
             />
             <span
-              class="mr-3 font-normal text-gray-900 dark:text-gray-300"
+              class="mr-3 font-normal text-white dark:text-gray-300"
               id="toggle-label"
             >
               Inactive
             </span>
-            <div class="relative w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primaryHighlight dark:peer-focus:ring-primaryHighlight rounded-full peer dark:bg-accent peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-green-500"></div>
+            <div
+              class="relative w-14 h-7 bg-gray-200 peer-focus:outline-none
+                     peer-focus:ring-4 peer-focus:ring-primaryHighlight
+                     dark:peer-focus:ring-primaryHighlight rounded-full
+                     peer dark:bg-accent peer-checked:after:translate-x-full
+                     rtl:peer-checked:after:-translate-x-full
+                     peer-checked:after:border-white after:content-['']
+                     after:absolute after:top-0.5 after:start-[4px]
+                     after:bg-white after:border-gray-300 after:border
+                     after:rounded-full after:h-6 after:w-6 after:transition-all
+                     dark:border-gray-600 peer-checked:bg-green-500"
+            ></div>
           </label>
         </div>
       </div>
-    {% block content %} {% endblock content %} {% block script %} {% endblock %}
-    <!-- </div> -->
-	<div class="text-textColor opacity-15 absolute bottom-3 right-1/2 transform translate-x-1/2 font-thin">Surakshak &copy; 2025 All Rights Reserved.</div>
- 
-</body>
-<script>
-  document.addEventListener("DOMContentLoaded", async () => {
-    try {
-      const response = await fetch("{% url 'toggle_status' %}", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await response.json();
-      if (data.success) {
-        const toggleState = data.state;
-        const toggleInput = document.querySelector("input[type='checkbox']");
+    </div>
+
+    <!-- Main Content -->
+    {% block content %}{% endblock content %}
+
+    <!-- Footer -->
+    <div class="text-textColor opacity-15 absolute bottom-3 right-1/2 transform translate-x-1/2 font-thin">
+      Surakshak &copy; 2025 All Rights Reserved.
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+      // Keep track of whether a toggle is in progress
+      let isToggling = false;
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // Grab references once
+        const heartbeatIcon = document.getElementById("heartbeat-icon");
+        const heartbeatTooltip = document.getElementById("heartbeat-tooltip");
+        const toggleInput = document.getElementById("status-toggle");
         const toggleLabel = document.getElementById("toggle-label");
-        toggleInput.checked = toggleState;
-        toggleLabel.innerText = toggleState ? "Active" : "Inactive";
-      }
-    } catch (error) {
-      console.error("Error fetching toggle state:", error);
-    }
-  });
-  
-  async function toggleState(state) {
-    try {
-      const response = await fetch("{% url 'toggle_status' %}", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": "{{ csrf_token }}",
-        },
-        body: JSON.stringify({ state: state }),
+
+        // Heartbeat Indicator Function
+        function updateHeartbeatIcon(isAlive) {
+          if (isAlive) {
+            heartbeatIcon.classList.remove("text-gray-400");
+            heartbeatIcon.classList.add("text-red-500");
+            heartbeatTooltip.innerText = "System is functional";
+          } else {
+            heartbeatIcon.classList.remove("text-red-500");
+            heartbeatIcon.classList.add("text-gray-400");
+            heartbeatTooltip.innerText = "System is down";
+          }
+        }
+
+        // Tooltip Show/Hide Functions
+        function showTooltip() {
+          heartbeatTooltip.classList.remove("hidden");
+        }
+
+        function hideTooltip() {
+          heartbeatTooltip.classList.add("hidden");
+        }
+
+        // Fetch heartbeat
+        function fetchHeartbeat() {
+          fetch("{% url 'heartbeat' %}")
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Network response was not ok");
+              }
+              return response.json();
+            })
+            .then((data) => {
+              if (data.success) {
+                // System is alive
+                updateHeartbeatIcon(true);
+
+                const status = data.status; // 'ACTIVE' or 'INACTIVE'
+                toggleInput.checked = status === "ACTIVE";
+                toggleLabel.innerText = status === "ACTIVE" ? "Active" : "Inactive";
+
+                const heartbeatContainer = heartbeatIcon.parentElement;
+                heartbeatContainer.removeEventListener("mouseenter", showTooltip);
+                heartbeatContainer.removeEventListener("mouseleave", hideTooltip);
+                heartbeatContainer.addEventListener("mouseenter", showTooltip);
+                heartbeatContainer.addEventListener("mouseleave", hideTooltip);
+              } else {
+                // System responded but indicates failure
+                updateHeartbeatIcon(false);
+              }
+            })
+            .catch((error) => {
+              console.error("Heartbeat fetch error:", error);
+              updateHeartbeatIcon(false);
+            });
+        }
+
+        // Initial heartbeat fetch
+        fetchHeartbeat();
+        // Poll heartbeat every second
+        setInterval(fetchHeartbeat, 1000);
       });
-      const data = await response.json();
-      if (data.success) {
-        document.getElementById("toggle-label").innerText = state
-          ? "Active"
-          : "Inactive";
-      } else {
-        console.error(data.error);
+
+      // Toggle Button Function
+      async function toggleState(state) {
+        // If a toggle request is already in progress, ignore subsequent clicks
+        if (isToggling) return;
+        isToggling = true;
+
+        const toggleInput = document.getElementById("status-toggle");
+        toggleInput.disabled = true; // Disable the button
+
+        try {
+          const response = await fetch("{% url 'toggle_status' %}", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify({ state }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+
+          const data = await response.json();
+          if (data.success) {
+            // Refresh the page after successful toggle
+            location.reload();
+          } else {
+            console.error("Toggle failed:", data.error);
+            alert("Failed to toggle system status. Please try again.");
+          }
+        } catch (error) {
+          console.error("Error toggling system status:", error);
+          alert("An error occurred while toggling the system status.");
+        } finally {
+          // Re-enable after the request finishes
+          toggleInput.disabled = false;
+          isToggling = false;
+        }
       }
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  }
-</script>
+    </script>
+
+    {% block script %}{% endblock %}
+  </body>
 </html>

@@ -8,7 +8,8 @@ from .views import (
     settings,
     toggle_status,
     notify_api,
-    timings_page
+    timings_page,
+    heartbeat
 )
 
 urlpatterns = [
@@ -22,4 +23,5 @@ urlpatterns = [
     path("__reload__/", include("django_browser_reload.urls")),
     path("notify_api/", notify_api, name="notify_api"),
     path("settings/timings", timings_page, name="timings"),
+    path("/heartbeat", heartbeat, name="heartbeat")
 ]

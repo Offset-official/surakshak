@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import StreamingHttpResponse, HttpResponse, JsonResponse
 from django.views.decorators import gzip
+from django.views.decorators.http import require_GET, require_POST
 from .utils.camera_manager import CameraManager
 import time
 from .models import Camera, Incident, Respondent
@@ -24,6 +25,20 @@ logger = logging.getLogger(__name__)
 def homepage(request):
     return render(request, "homepage.html")
 
+
+@require_GET
+def heartbeat(request):
+    """
+    Returns the current system status.
+    Expected response format: {'success': True, 'status': 'ACTIVE'/'INACTIVE'}
+    """
+    try:
+        status = SystemConfig.instrusion_state
+        logger.debug(f"Heartbeat check: {status}")
+        return JsonResponse({'success': True, 'status': status})
+    except Exception as e:
+        logger.error(f"Heartbeat error: {e}")
+        return JsonResponse({'success': False, 'error': 'Failed to retrieve system status'}, status=500)
 
 @gzip.gzip_page
 def video_feed(request, camera_name):
@@ -75,20 +90,23 @@ def settings(request):
     return render(request, "settings.html")
 
 
-@csrf_exempt
+@require_POST
 def toggle_status(request):
-    if request.method == "POST":
-        try:
-            SystemConfig.toggle()
-            return JsonResponse({"success": True, "state": SystemConfig.instrusion_state in ("ACTIVE")})
-        except Exception as e:
-            return JsonResponse({"success": False, "error": str(e)}, status=500)
-    elif request.method == "GET":
-        return JsonResponse({"success": True, "state": SystemConfig.instrusion_state in ("ACTIVE")})
-    return JsonResponse(
-        {"success": False, "error": "Invalid request method"}, status=405
-    )
+    """
+    Toggles the system status based on the request.
+    Expects JSON body: {'state': True/False}
+    """
+    try:
+        SystemConfig.toggle()
+        logger.info(f"System status toggled to: {SystemConfig.instrusion_state}")
 
+        return JsonResponse({'success': True, 'status': SystemConfig.instrusion_state})
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON in toggle_status request")
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        logger.error(f"Toggle status error: {e}")
+        return JsonResponse({'success': False, 'error': 'Failed to toggle system status'}, status=500)
 
 def notify_api(
     request,
