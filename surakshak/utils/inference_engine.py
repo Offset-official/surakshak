@@ -8,8 +8,11 @@ from surakshak.utils.models.surakshak_yolo import infer_yolo
 from django.conf import settings
 import uuid
 import time
+import surakshak.utils.system_config as system_config
+import surakshak.utils.coordinator_thread as coordinator_thread
 
 logger = logging.getLogger("inference")
+lockdown_lock = threading.Lock()
 
 
 def frame_generator(camera: VideoCamera):
@@ -46,6 +49,11 @@ def intrusion_detector(frame):
         # create incident in database with image reference and intrusion details
         # ask all cameras to stop inference for some time
         # system should enter a lockdown mode
+         # other threads have to wait if a thread jumped ahead and entered lockdown mode
+        with lockdown_lock:
+            if not system_config.SystemConfig.lockdown: 
+                # the thread that reaches this first will call the lockdown
+                coordinator_thread.CoordinatorThread(system_config.enter_lockdown)
         # once lockdown mode is over, return to normal operation
 
 

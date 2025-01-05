@@ -2,12 +2,13 @@ import threading
 import time 
 import datetime
 import logging 
-from surakshak.utils.inference_engine import InferenceEngine
+import surakshak.utils.inference_engine as inference_engine
 
 logger = logging.getLogger(__name__)
 
 class SystemConfig:
     instrusion_state = ""
+    lockdown = False
 
     @classmethod
     def set_intrusion(cls, val):
@@ -26,10 +27,10 @@ class SystemConfig:
     def toggle(cls):
         if cls.instrusion_state == "ACTIVE":
             cls.instrusion_state = "INACTIVE"
-            InferenceEngine.stop()
+            inference_engine.InferenceEngine.stop()
         elif cls.instrusion_state == "INACTIVE":
             cls.instrusion_state = "ACTIVE"
-            InferenceEngine.start()
+            inference_engine.InferenceEngine.start()
 
 def state_switch(InferenceSchedule):
     while True:
@@ -55,19 +56,27 @@ def state_switch(InferenceSchedule):
                 SystemConfig.set_intrusion("INACTIVE")
                 logger.info("System state switched to INACTIVE. Logger sleeping for 120 seconds.")
                 # turn off inference engine 
-                InferenceEngine.stop()
+                inference_engine.InferenceEngine.stop()
                 time.sleep(120)
                 continue 
             if (now_hour, now_min) == (inactive_schedule_end_hour, inactive_schedule_end_min):
                 SystemConfig.set_intrusion("ACTIVE")
                 logger.info("System state switched to ACTIVE. Logger sleeping for 120 seconds.")
                 # turn on inference engine 
-                InferenceEngine.start()
+                inference_engine.InferenceEngine.start()
                 time.sleep(120)
                 continue 
         time.sleep(20)
         continue
         
+def enter_lockdown():
+    SystemConfig.lockdown = True # will disable toggle switch and periodic state switch, boot config is not a problem
+    SystemConfig.instrusion_state = "INACTIVE" # for system consistency
+    logger.info("ENTERING LOCKDOWN MODE.")
+    inference_engine.InferenceEngine.stop() # all camera inferences will stop
                 
-            
+def resolve_lockdown():
+    SystemConfig.lockdown = False 
+    SystemConfig.instrusion_state = "ACTIVE"
+    inference_engine.InferenceEngine.start() 
     

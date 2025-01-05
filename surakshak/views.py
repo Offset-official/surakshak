@@ -35,6 +35,7 @@ def heartbeat(request):
     try:
         status = SystemConfig.instrusion_state
         logger.debug(f"Heartbeat check: {status}")
+        logger.info(status)
         return JsonResponse({'success': True, 'status': status})
     except Exception as e:
         logger.error(f"Heartbeat error: {e}")
