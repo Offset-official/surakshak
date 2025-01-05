@@ -42,6 +42,7 @@ class IncidentAdmin(admin.ModelAdmin):
 
 class CameraAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'location', 'rtsp_url')
+    # disable url checks
 
 class IncidentTypeAdmin(admin.ModelAdmin):
     list_display = ('type_name', 'respondents_display')  # Custom display for respondents
@@ -53,10 +54,15 @@ class IncidentTypeAdmin(admin.ModelAdmin):
 
     respondents_display.short_description = "Respondents"
 
+class InferenceScheduleAdmin(admin.ModelAdmin):
+    list_display = ('id', 'start_time', 'end_time', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')
 
+    
 
 ## Registering models with the admin site
 admin.site.register(Respondent, RespondentAdmin)
 admin.site.register(Camera, CameraAdmin)
 admin.site.register(Incident, IncidentAdmin)
 admin.site.register(IncidentType, IncidentTypeAdmin)
+admin.site.register(InferenceSchedule)
+admin.site.register(Log)

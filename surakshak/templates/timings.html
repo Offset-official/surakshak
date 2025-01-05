@@ -1,0 +1,122 @@
+<!-- timings.html -->
+{% extends "layout1.html" %}
+
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center primaryHighlight">
+    <h3 class="mt-12">Select timings for the intrusion detection system.</h3>
+
+    {% if success %}
+        <div id="success-popup" class="fixed justify-center transform -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white p-6 rounded shadow-lg transition-opacity duration-500 opacity-100 scale-100">
+            Success!
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const successPopup = document.getElementById('success-popup');
+                successPopup.style.opacity = '1';
+                successPopup.style.transform = 'scale(1)';
+                setTimeout(function () {
+                    successPopup.style.display = 'none';
+                }, 1500);
+            });
+        </script>
+    {% endif %}
+    <!-- Form Container -->
+    <form action="{% url 'timings' %}" method="post" class="bg-primaryHighlight p-8 rounded shadow-lg w-full max-w-md mt-4">
+        {% csrf_token %}
+        
+        <!-- Start Time Field -->
+        <div class="mb-4">
+            <label for="{{ form.start_time.id_for_label }}" class="block text-white font-semibold mb-2">Start Time</label>
+            {% render_field form.start_time class="w-full bg-gray-700 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" %}
+            {% if form.start_time.errors %}
+                <p class="text-red-400 text-sm mt-1">{{ form.start_time.errors }}</p>
+            {% endif %}
+        </div>
+        
+        <!-- End Time Field -->
+        <div class="mb-6">
+            <label for="{{ form.end_time.id_for_label }}" class="block text-white font-semibold mb-2">End Time</label>
+            {% render_field form.end_time class="w-full bg-gray-700 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" %}
+            {% if form.end_time.errors %}
+                <p class="text-red-400 text-sm mt-1">{{ form.end_time.errors }}</p>
+            {% endif %}
+        </div>
+        
+        <!-- Days Checkboxes -->
+        <div class="mb-6">
+            <span class="block text-white font-semibold mb-2">Select Days:</span>
+            <div class="flex flex-wrap gap-4">
+                <!-- Monday -->
+                <div class="flex items-center">
+                    {% render_field form.monday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-blue-500 accent-white" %}
+                    <label for="{{ form.monday.id_for_label }}" class="ml-2 text-white">Monday</label>
+                </div>
+                <!-- Tuesday -->
+                <div class="flex items-center">
+                    {% render_field form.tuesday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-blue-500 accent-white" %}
+                    <label for="{{ form.tuesday.id_for_label }}" class="ml-2 text-white">Tuesday</label>
+                </div>
+                <!-- Wednesday -->
+                <div class="flex items-center">
+                    {% render_field form.wednesday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-blue-500 accent-white" %}
+                    <label for="{{ form.wednesday.id_for_label }}" class="ml-2 text-white">Wednesday</label>
+                </div>
+                <!-- Thursday -->
+                <div class="flex items-center">
+                    {% render_field form.thursday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-blue-500 accent-white" %}
+                    <label for="{{ form.thursday.id_for_label }}" class="ml-2 text-white">Thursday</label>
+                </div>
+                <!-- Friday -->
+                <div class="flex items-center">
+                    {% render_field form.friday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-blue-500 accent-white" %}
+                    <label for="{{ form.friday.id_for_label }}" class="ml-2 text-white">Friday</label>
+                </div>
+                <!-- Saturday -->
+                <div class="flex items-center">
+                    {% render_field form.saturday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-blue-500 accent-white" %}
+                    <label for="{{ form.saturday.id_for_label }}" class="ml-2 text-white">Saturday</label>
+                </div>
+                <!-- Sunday -->
+                <div class="flex items-center">
+                    {% render_field form.sunday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-blue-500 accent-white" %}
+                    <label for="{{ form.sunday.id_for_label }}" class="ml-2 text-white">Sunday</label>
+                </div>
+            </div>
+            {% if form.non_field_errors %}
+                <p class="text-red-400 text-sm mt-2">{{ form.non_field_errors }}</p>
+            {% endif %}
+        </div>
+        
+        <!-- Submit Button -->
+        <div>
+            <input 
+                type="submit" 
+                value="Submit" 
+                class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition duration-300"
+            >
+        </div>
+    </form>
+</div>
+
+<!-- JavaScript for Time Validation -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form');
+        const startTimeInput = document.getElementById('{{ form.start_time.id_for_label }}');
+        const endTimeInput = document.getElementById('{{ form.end_time.id_for_label }}');
+
+        form.addEventListener('submit', function (e) {
+            const startTime = startTimeInput.value;
+            const endTime = endTimeInput.value;
+
+            if (startTime && endTime && startTime >= endTime) {
+                e.preventDefault();
+                alert('End time must be after start time.');
+                endTimeInput.focus();
+            }
+        });
+    });
+</script>
+{% endblock content %}
