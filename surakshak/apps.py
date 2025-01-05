@@ -1,6 +1,7 @@
 from django.apps import AppConfig
 from surakshak.utils.camera_manager import CameraManager
 from surakshak.utils.inference_engine import InferenceEngine
+from surakshak.utils_system_config import SystemConfig
 import threading
 import os
 import logging
@@ -31,7 +32,7 @@ class SurakshakConfig(AppConfig):
             streams.append(stream)
 
         def initialize_cameras():
-            for stream in streams:
+            for stream in streams[:2]:
                 CameraManager.add_camera(stream["name"], stream["url"])
                 # each camera is running in a separate thread
             print("All camera fetchers started.")
@@ -41,7 +42,10 @@ class SurakshakConfig(AppConfig):
             InferenceEngine.start()
             # inference for each camera will be in a separate thread
 
-        # initialize_cameras()
+        initialize_cameras()
         if getattr(settings, "INFERENCE_ENGINE", False):
             logger.info("Starting inference engine")
             start_inference_engine()
+
+        # set intrusion state
+        from .models import Inferece

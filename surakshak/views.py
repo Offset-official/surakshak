@@ -115,7 +115,7 @@ def notify_api(
             Respondents = RespondentSerializer(Respondent.objects.all(), many=True).data
             sample_url = "https://www.incident_page.com"
             main_text = f"Dear Surakshak,\n\nPlease check out the incident snippet and other information at {sample_url} to resolve the alert as soon as possible.  \n\nRegards, \nInstitution"
-            subject = f"Alert! Incident Type: {incident_data["incident_type"]} Detected at {incident_data["camera"]}"
+            subject = f"Alert! Incident Type: {incident_data['incident_type']} Detected at {incident_data['camera']}"
             phnumbers = [respondent["phone"] for respondent in Respondents]
             account_sid = os.getenv("WHATSAPP_ACCOUNT_SID")
             auth_token = os.getenv("WHATSAPP_AUTH_TOKEN")

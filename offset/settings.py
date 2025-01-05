@@ -45,9 +45,11 @@ TAILWIND_APP_NAME = "surakshak"
 
 if platform == "win32":
     NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
+    
 else:
     NPM_BIN_PATH = (
-        "/opt/homebrew/bin/npm"  # should work for linux and mac if not please change : )
+        "/home/jalan/.nvm/versions/node/v22.12.0/bin/npm"
+          # should work for linux and mac if not please change : )
     )
 
 # Application definition
@@ -200,4 +202,4 @@ LOGGING = {
     },
 }
 
-INFERENCE_ENGINE = False
+INFERENCE_ENGINE = True

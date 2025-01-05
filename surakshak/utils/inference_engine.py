@@ -7,6 +7,7 @@ import threading
 from surakshak.utils.models.surakshak_yolo import infer_yolo
 from django.conf import settings
 import uuid
+import time 
 
 logger = logging.getLogger("inference")
 
@@ -38,7 +39,8 @@ def intrusion_detector(frame):
     if human_detected:
         logger.critical("Human detected! Entering Intrusion Mode.")
         output_image_name = str(uuid.uuid4()) + ".jpg"
-        cv2.imwrite(settings.MEDIA_ROOT + output_image_name, output_image)
+        cv2.imwrite(settings.MEDIA_ROOT / output_image_name, output_image)
+
         # save image somewhere
         # start recording 5s clip of incident
         # create incident in database with image reference and intrusion details
@@ -49,6 +51,7 @@ def intrusion_detector(frame):
 
 def motion_detector(
     frame_generator,
+    camera_name,
     MIN_SIZE_FOR_MOVEMENT=2000
 ):
     """
@@ -94,7 +97,7 @@ def motion_detector(
 
         # If motion is detected, call another model (inference, etc.)
         if motion_detected:
-            logger.info(f"Frame {idx}: Motion detected.")
+            # logger.info(f"Frame {idx}: Motion detected. Camera {camera_name}")
             # should we also save all instances where motion was detected?
             intrusion_detector(current_frame)
         prev_frame = gray
@@ -102,14 +105,16 @@ def motion_detector(
     logger.info("Motion detection ended.")
 
 class CameraInferenceEngine:
-    def __init__(self, camera):
+    def __init__(self, camera, name):
         self.camera = camera
+        self.name = name
         self.thread = threading.Thread(target=self.infer_frames, daemon=True, name="Camera IE " + camera.name)
         self.params = []
         self.thread.start()
     
     def infer_frames(self):
-        motion_detector(frame_generator(self.camera))
+        time.sleep(5)
+        motion_detector(frame_generator(self.camera), self.name)
 
 class InferenceEngine:
     camera_inference_engines = []
@@ -117,7 +122,8 @@ class InferenceEngine:
     @classmethod
     def start(cls):
         from surakshak.utils.camera_manager import CameraManager
-        for camera in list(CameraManager._cameras.values())[:1]:
-            camera_inference_engine = CameraInferenceEngine(camera)
+        for items in list(CameraManager._cameras.items()):
+            name, camera = items
+            camera_inference_engine = CameraInferenceEngine(camera, name)
             cls.camera_inference_engines.append(camera_inference_engine)
         
