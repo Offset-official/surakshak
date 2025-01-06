@@ -17,204 +17,259 @@
   </head>
 
   <body class="bg-primaryBg text-textColor font-sans p-10">
-    <div class="flex items-center gap-4 mb-10">
-      <div class="flex justify-between w-full items-center">
-        <!-- Logo Section -->
-        <a class="flex gap-4" href="/">
-          <div class="h-full">
-            <img src="{% static '/logo.svg' %}" alt="logo" class="w-20 h-20" />
-          </div>
-          <div class="flex flex-col justify-center">
-            <div class="text-5xl font-bold">Surakshak</div>
-            <div class="text-lg">A Smart Security System for Institutions</div>
-          </div>
-        </a>
-
-        <!-- Menu / Navigation -->
-        <div class="flex border-2 rounded-lg border-primaryHighlight">
-          <a
-            href="/streams"
-            class="py-4 font-normal border-r-2 border-primaryHighlight px-20 text-sm transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
-            >Streams</a
-          >
-          <a
-            href="/notify"
-            class="py-4 font-normal border-r-2 border-primaryHighlight px-20 text-sm transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
-            >Notify</a
-          >
-          <a
-            href="/logs"
-            class="py-4 font-normal border-r-2 border-primaryHighlight px-20 text-sm transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
-            >Logs</a
-          >
-          <a
-            href="/settings"
-            class="py-4 font-normal px-20 border-r-2 border-primaryHighlight text-sm transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
-            >Settings</a
-          >
-
-          <!-- Toggle & Heartbeat Section -->
-          <div class="flex items-center gap-4 ml-4 w-44 justify-center py-2">
-            <!-- Heartbeat Icon -->
-            <div class="relative group" style="width: 24px; height: 24px;">
-              <svg
-                id="heartbeat-icon"
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-6 h-6 text-gray-400 transition-colors duration-300"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 
-                     C2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 
-                     4.5 2.09C13.09 3.81 14.76 3 
-                     16.5 3 19.58 3 22 5.42 22 8.5
-                     c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                />
-              </svg>
-              <!-- Tooltip -->
-              <div
-                id="heartbeat-tooltip"
-                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden px-2 py-1 bg-gray-700 text-white text-xs rounded group-hover:block"
-              >
-                Checking...
-              </div>
-            </div>
-
-            <!-- Toggle Button -->
-            <label class="inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                class="sr-only peer"
-                onchange="toggleSystemState(this.checked)"
-                id="status-toggle"
-              />
-              <span
-                class="mr-3 text-sm font-normal"
-                id="toggle-label"
-              >
-                Inactive
-              </span>
-              <div
-                class="relative w-12 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-3 peer-focus:ring-primaryHighlight
-                       rounded-full peer dark:bg-accent peer-checked:after:translate-x-full
-                       rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white
-                       after:content-[''] after:absolute after:top-0.5 after:start-[3px]
-                       after:bg-white after:border-gray-300 after:border after:rounded-full
-                       after:h-5 after:w-5 after:transition-all dark:border-gray-600
-                       peer-checked:bg-green-500"
-              ></div>
-            </label>
-          </div>
+    <!-- Navbar -->
+    <header class="flex justify-between items-center w-full mb-10">
+      <!-- Logo Section -->
+      <a class="flex gap-4" href="/">
+        <div class="h-full">
+          <img src="{% static 'logo.svg' %}" alt="logo" class="w-20 h-20" />
         </div>
+        <div class="flex flex-col justify-center">
+          <div class="text-5xl font-bold">Surakshak</div>
+          <div class="text-lg">A Smart Security System for Institutions</div>
+        </div>
+      </a>
+
+      <!-- Menu / Navigation -->
+      <nav class="flex border-2 rounded-lg border-primaryHighlight">
+        <a
+          href="/streams"
+          class="py-4 px-20 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
+          >Streams</a
+        >
+        <a
+          href="/notify"
+          class="py-4 px-20 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
+          >Notify</a
+        >
+        <a
+          href="/logs"
+          class="py-4 px-20 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
+          >Logs</a
+        >
+        <a
+          href="/settings"
+          class="py-4 px-20 text-sm font-normal transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
+          >Settings</a
+        >
+      </nav>
+
+      <!-- Toggle & Heartbeat Section -->
+      <div class="flex items-center gap-4 ml-4 w-44 justify-center py-2">
+        <!-- Heartbeat Icon -->
+        <div class="relative group" style="width: 24px; height: 24px;">
+          <!-- Heartbeat SVG Icon -->
+          <svg
+            id="heartbeat-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6 text-gray-400 transition-colors duration-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 
+                 C2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 
+                 4.5 2.09C13.09 3.81 14.76 3 
+                 16.5 3 19.58 3 22 5.42 22 8.5
+                 c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            />
+          </svg>
+          
+          <!-- Caution SVG Icon (Initially Hidden) -->
+          <svg
+            id="caution-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6 text-yellow-400 transition-colors duration-300 hidden"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+
+          <!-- Tooltip -->
+          <span
+            id="heartbeat-tooltip"
+            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden px-2 py-1 bg-gray-700 text-white text-xs rounded group-hover:block"
+          >
+            Checking...
+          </span>
+        </div>
+
+        <!-- Toggle Button -->
+        <label class="inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            class="sr-only peer"
+            onchange="toggleSystemState()"
+            id="status-toggle"
+          />
+          <span
+            class="mr-3 text-sm font-normal"
+            id="toggle-label"
+          >
+            Inactive
+          </span>
+          <div
+            class="relative w-12 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-3 peer-focus:ring-primaryHighlight
+                   rounded-full peer dark:bg-accent peer-checked:after:translate-x-full
+                   rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white
+                   after:content-[''] after:absolute after:top-0.5 after:start-[3px]
+                   after:bg-white after:border-gray-300 after:border
+                   after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600
+                   peer-checked:bg-green-500"
+          ></div>
+        </label>
       </div>
-    </div>
+    </header>
 
     <!-- Main Content -->
-    {% block content %}{% endblock content %}
+    <main>
+      {% block content %}
+      {% endblock content %}
+    </main>
 
-    {% block script %}{% endblock %}
+    <!-- Footer -->
+    <footer class="text-textColor opacity-15 mt-10">
+      Surakshak &copy; 2025 All Rights Reserved.
+    </footer>
 
+    <!-- JavaScript -->
     <script>
-      // Global flag to prevent rapid toggles
+      // Flag to prevent multiple toggle requests simultaneously
       let isToggling = false;
 
-      // Called once DOM content is loaded
       document.addEventListener("DOMContentLoaded", () => {
-        // Setup initial system status and start heartbeat checks
-        fetchSystemStatus();
+        // Grab references once
+        const heartbeatIcon = document.getElementById("heartbeat-icon");
+        const cautionIcon = document.getElementById("caution-icon");
+        const heartbeatTooltip = document.getElementById("heartbeat-tooltip");
+        const toggleInput = document.getElementById("status-toggle");
+        const toggleLabel = document.getElementById("toggle-label");
+
+        // Function to show tooltip
+        function showTooltip() {
+          heartbeatTooltip.classList.remove("hidden");
+        }
+
+        // Function to hide tooltip
+        function hideTooltip() {
+          heartbeatTooltip.classList.add("hidden");
+        }
+
+        // Function to update indicators based on system status and lockdown
+        function updateIndicators(isAlive, lockdown, status) {
+          if (lockdown) {
+            // Show caution icon and hide heartbeat icon
+            heartbeatIcon.classList.add("hidden");
+            cautionIcon.classList.remove("hidden");
+            heartbeatTooltip.innerText = "System is in lockdown";
+
+            // Disable toggle switch
+            toggleInput.checked = false;
+            toggleLabel.innerText = "Inactive";
+            toggleInput.disabled = true;
+          } else {
+            // Show heartbeat icon and hide caution icon
+            heartbeatIcon.classList.remove("hidden");
+            cautionIcon.classList.add("hidden");
+            heartbeatTooltip.classList.remove("hidden");
+
+            if (isAlive) {
+              // System is alive
+              heartbeatIcon.classList.remove("text-gray-400");
+              heartbeatIcon.classList.add("text-red-500");
+              heartbeatTooltip.innerText = "System is functional";
+
+              // Update toggle based on status
+              toggleInput.checked = status === "ACTIVE";
+              toggleLabel.innerText = status === "ACTIVE" ? "Active" : "Inactive";
+              toggleInput.disabled = false;
+            } else {
+              // System is down
+              heartbeatIcon.classList.remove("text-red-500");
+              heartbeatIcon.classList.add("text-gray-400");
+              heartbeatTooltip.innerText = "System is down";
+
+              // Disable toggle switch
+              toggleInput.checked = false;
+              toggleLabel.innerText = "Inactive";
+              toggleInput.disabled = true;
+            }
+          }
+        }
+
+        // Function to fetch heartbeat and system status
+        function fetchHeartbeat() {
+          fetch("{% url 'heartbeat' %}")
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Network response was not ok");
+              }
+              return response.json();
+            })
+            .then((data) => {
+              if (data.success) {
+                const status = data.status; // 'ACTIVE' or 'INACTIVE'
+                const lockdown = data.lockdown; // True or False
+                const isAlive = true; // Since heartbeat responded successfully
+
+                updateIndicators(isAlive, lockdown, status);
+              } else {
+                // Heartbeat responded with success: False
+                const isAlive = false;
+                const lockdown = false; // Assuming no lockdown if heartbeat failed
+                updateIndicators(isAlive, lockdown, null);
+              }
+            })
+            .catch((error) => {
+              console.error("Heartbeat fetch error:", error);
+              // Assume system is down if heartbeat fetch fails
+              const isAlive = false;
+              const lockdown = false;
+              updateIndicators(isAlive, lockdown, null);
+            });
+        }
+
+        // Initial heartbeat fetch
+        fetchHeartbeat();
+        // Poll heartbeat every second
         setInterval(fetchHeartbeat, 1000);
+
+        // Tooltip event listeners
+        const heartbeatContainer = heartbeatIcon.parentElement;
+        heartbeatContainer.addEventListener("mouseenter", showTooltip);
+        heartbeatContainer.addEventListener("mouseleave", hideTooltip);
       });
 
       /**
-       * Fetch the current system status (ACTIVE/INACTIVE).
-       * You can modify this if your GET endpoint differs.
+       * Toggle Button Function
        */
-      async function fetchSystemStatus() {
-        try {
-          // For demonstration, we assume a dedicated GET endpoint to get state.
-          // If you are using the same `toggle_status` endpoint for GET,
-          // you can adapt this fetch accordingly:
-          const response = await fetch("{% url 'heartbeat' %}");
-          if (!response.ok) {
-            throw new Error("Failed to fetch current system status");
-          }
-          const data = await response.json();
-          if (data.success) {
-            // Update the toggle input and label
-            const status = data.status; // 'ACTIVE' or 'INACTIVE'
-            const toggleInput = document.getElementById("status-toggle");
-            const toggleLabel = document.getElementById("toggle-label");
-
-            toggleInput.checked = (status === "ACTIVE");
-            toggleLabel.innerText = (status === "ACTIVE") ? "Active" : "Inactive";
-          }
-        } catch (error) {
-          console.error("Error fetching system status:", error);
-        }
-      }
-
-      /**
-       * Periodically checks if system is 'alive' or 'down' by hitting a heartbeat endpoint.
-       * If system is responding successfully, color the heart icon red; otherwise, gray.
-       */
-      async function fetchHeartbeat() {
-        try {
-          const response = await fetch("{% url 'heartbeat' %}");
-          if (!response.ok) {
-            throw new Error("Heartbeat request failed");
-          }
-          const data = await response.json();
-          const heartbeatIcon = document.getElementById("heartbeat-icon");
-          const heartbeatTooltip = document.getElementById("heartbeat-tooltip");
-
-          if (data.success) {
-            // System is alive
-            heartbeatIcon.classList.remove("text-gray-400");
-            heartbeatIcon.classList.add("text-red-500");
-            heartbeatTooltip.innerText = "System is functional";
-          } else {
-            // System indicates a problem
-            heartbeatIcon.classList.remove("text-red-500");
-            heartbeatIcon.classList.add("text-gray-400");
-            heartbeatTooltip.innerText = "System is down";
-          }
-        } catch (error) {
-          console.error("Error in heartbeat check:", error);
-          // Mark system as down if we can't reach it
-          const heartbeatIcon = document.getElementById("heartbeat-icon");
-          const heartbeatTooltip = document.getElementById("heartbeat-tooltip");
-          heartbeatIcon.classList.remove("text-red-500");
-          heartbeatIcon.classList.add("text-gray-400");
-          heartbeatTooltip.innerText = "System is down";
-        }
-      }
-
-      /**
-       * Called when user toggles the checkbox (Active <-> Inactive).
-       */
-      async function toggleSystemState(state) {
-        // Prevent rapid toggles
+      async function toggleSystemState() {
+        // If a toggle request is already in progress, ignore subsequent clicks
         if (isToggling) return;
         isToggling = true;
 
         const toggleInput = document.getElementById("status-toggle");
-        const toggleLabel = document.getElementById("toggle-label");
-        toggleInput.disabled = true; // Disable UI until request finishes
+        toggleInput.disabled = true; // Disable the button to prevent multiple clicks
 
         try {
-          // We assume `toggle_status` toggles the system state and returns the new state.
           const response = await fetch("{% url 'toggle_status' %}", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               "X-CSRFToken": "{{ csrf_token }}",
             },
-            body: JSON.stringify({ state: state }),
+            body: JSON.stringify({}), // Empty body since backend toggles state
           });
 
           if (!response.ok) {
@@ -223,19 +278,19 @@
 
           const data = await response.json();
           if (data.success) {
-            // Update the label based on the new state
-            toggleLabel.innerText = state ? "Active" : "Inactive";
+            // Refresh the page after successful toggle
+            location.reload();
           } else {
             console.error("Toggle failed:", data.error);
             alert("Failed to toggle system status. Please try again.");
             // Revert the toggle if the backend failed
-            toggleInput.checked = !state;
+            toggleInput.checked = !toggleInput.checked;
           }
         } catch (error) {
           console.error("Error toggling system status:", error);
           alert("An error occurred while toggling the system status.");
           // Revert the toggle
-          toggleInput.checked = !state;
+          toggleInput.checked = !toggleInput.checked;
         } finally {
           // Re-enable UI
           toggleInput.disabled = false;

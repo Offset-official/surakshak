@@ -28,7 +28,7 @@ def frame_generator(camera: VideoCamera):
             yield None
 
 
-def intrusion_detector(frame):
+def intrusion_detector(frame, camera_name):
     """Placeholder for your custom model or processing routine.
     This function will be called whenever motion is detected.
     """
@@ -40,7 +40,7 @@ def intrusion_detector(frame):
             human_detected = True
             break
     if human_detected:
-        logger.critical("Human detected! Entering Intrusion Mode.")
+        logger.critical("Human detected!")
         output_image_name = str(uuid.uuid4()) + ".jpg"
         cv2.imwrite(settings.MEDIA_ROOT / output_image_name, output_image)
 
@@ -53,7 +53,7 @@ def intrusion_detector(frame):
         with lockdown_lock:
             if not system_config.SystemConfig.lockdown: 
                 # the thread that reaches this first will call the lockdown
-                coordinator_thread.CoordinatorThread(system_config.enter_lockdown)
+                coordinator_thread.CoordinatorThread(system_config.enter_lockdown, camera_name)
         # once lockdown mode is over, return to normal operation
 
 
@@ -106,7 +106,7 @@ def motion_detector(
 
         # If motion is detected, call another model (inference, etc.)
         if motion_detected:
-            intrusion_detector(current_frame)
+            intrusion_detector(current_frame, camera_name)
         prev_frame = gray
 
     logger.info("Motion detection ended.")

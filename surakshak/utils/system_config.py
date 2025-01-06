@@ -51,15 +51,17 @@ def state_switch(InferenceSchedule):
 
             inactive_schedule_end_hour = inactive_schedule.end_time.hour
             inactive_schedule_end_min = inactive_schedule.end_time.minute
-
-            if (now_hour, now_min) == (inactive_schedule_start_hour, inactive_schedule_start_min):
+            
+            if SystemConfig.lockdown:
+                logger.info("Periodic switch bypassed due to lockdown.")
+            elif (now_hour, now_min) == (inactive_schedule_start_hour, inactive_schedule_start_min):
                 SystemConfig.set_intrusion("INACTIVE")
                 logger.info("System state switched to INACTIVE. Logger sleeping for 120 seconds.")
                 # turn off inference engine 
                 inference_engine.InferenceEngine.stop()
                 time.sleep(120)
                 continue 
-            if (now_hour, now_min) == (inactive_schedule_end_hour, inactive_schedule_end_min):
+            elif (now_hour, now_min) == (inactive_schedule_end_hour, inactive_schedule_end_min):
                 SystemConfig.set_intrusion("ACTIVE")
                 logger.info("System state switched to ACTIVE. Logger sleeping for 120 seconds.")
                 # turn on inference engine 
@@ -69,11 +71,18 @@ def state_switch(InferenceSchedule):
         time.sleep(20)
         continue
         
-def enter_lockdown():
+def enter_lockdown(camera_name):
+    from surakshak.models import Incident
     SystemConfig.lockdown = True # will disable toggle switch and periodic state switch, boot config is not a problem
     SystemConfig.instrusion_state = "INACTIVE" # for system consistency
     logger.info("ENTERING LOCKDOWN MODE.")
     inference_engine.InferenceEngine.stop() # all camera inferences will stop
+    Incident.objects.create(
+        incident_type = "Trespassing",
+        camera=camera_name,
+        resolved = False,
+        resolver = None
+    )
                 
 def resolve_lockdown():
     SystemConfig.lockdown = False 
