@@ -7,6 +7,7 @@ import os
 import logging
 from django.conf import settings
 import datetime
+from dotenv import load_dotenv
 
 
 logger = logging.getLogger(__name__)
@@ -88,7 +89,8 @@ class SurakshakConfig(AppConfig):
         # if getattr(settings, "INFERENCE_ENGINE", False):
         #     logger.info("Starting inference engine")
         #     InferenceEngine.start()
-
+        logger.info("Loading environment variables...")
+        load_dotenv()
         SystemConfig.start_state_switch(InferenceSchedule)
 
 

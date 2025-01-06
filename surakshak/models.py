@@ -34,11 +34,12 @@ class Respondent(models.Model):
 class Incident(models.Model):
     id = models.AutoField(primary_key=True)
     created_at = models.DateTimeField(default=now)  
-    incident_type = models.ForeignKey("IncidentType", on_delete=models.CASCADE, null=True)  
+    incident_type = models.CharField(max_length=200)
+    # incident_type = models.ForeignKey("IncidentType", on_delete=models.CASCADE, null=True)  
     # camera = models.ForeignKey("Camera", on_delete=models.CASCADE, related_name="name") 
     camera = models.CharField(max_length=200)
     resolved = models.BooleanField(default=False)
-    image_uuid = models.CharField(max_length=200, null=True)
+    image = models.ImageField(null=True)
     resolver = models.ForeignKey("Respondent", on_delete=models.CASCADE, null=True, blank=True)  
     
     def __str__(self):

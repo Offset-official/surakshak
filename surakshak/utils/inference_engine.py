@@ -5,11 +5,12 @@ import numpy as np
 from surakshak.utils.camera_manager import VideoCamera
 import threading
 from surakshak.utils.models.surakshak_yolo import infer_yolo
-from django.conf import settings
 import uuid
 import time
 import surakshak.utils.system_config as system_config
 import surakshak.utils.coordinator_thread as coordinator_thread
+from django.core.files.base import ContentFile
+import io
 
 logger = logging.getLogger("inference")
 lockdown_lock = threading.Lock()
@@ -51,10 +52,11 @@ def intrusion_detector(frame, camera_name):
         with lockdown_lock:
             if not system_config.SystemConfig.lockdown: 
                 # the thread that reaches this first will call the lockdown
-                output_image_name = str(uuid.uuid4()) + ".jpg"
-                cv2.imwrite(settings.MEDIA_ROOT / output_image_name, output_image)
-                logger.info("Intrusion image saved. Intrusion image saved. Intrusion image saved.")
-                coordinator_thread.CoordinatorThread(system_config.enter_lockdown, camera_name, output_image_name)
+                _, encoded_image = cv2.imencode('.jpg', output_image)
+                image_content = ContentFile(encoded_image.tobytes(), name=f"{uuid.uuid4()}.jpg")
+
+            # Pass image_content to your function or model
+                coordinator_thread.CoordinatorThread(system_config.enter_lockdown, camera_name, image_content)
         # once lockdown mode is over, return to normal operation
 
 

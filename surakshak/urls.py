@@ -1,4 +1,8 @@
 from django.urls import path, include
+from django.conf import settings as django_settings
+from django.conf.urls.static import static
+
+
 from .views import (
     homepage,
     stream_page,
@@ -25,12 +29,10 @@ urlpatterns = [
     path("toggle-status/", toggle_status, name="toggle_status"),
     path("__reload__/", include("django_browser_reload.urls")),
     path("notify_api/", notify_api, name="notify_api"),
-<<<<<<< HEAD
     path("settings/timings", timings_page, name="timings"),
     path("heartbeat", heartbeat, name="heartbeat"),
-    path("resolve/<str:incident_id>", resolve, name="resolve")
-=======
+    path("resolve/<str:incident_id>", resolve, name="resolve"),
     path("settings/respondents/", respondents_page, name="respondents_page"),
     path("settings/add_respondent/", add_respondent, name="add_respondent"),
->>>>>>> dd43d1c144239e6c3fe9b98e46c9d4c894b0a0e3
-]
+    
+] + static(django_settings.MEDIA_URL, document_root=django_settings.MEDIA_ROOT)
