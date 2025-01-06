@@ -10,7 +10,7 @@ from .views import (
     notify_api,
     timings_page,
     heartbeat,
-    resolve
+    resolve,
     respondents_page,
     add_respondent
 )
