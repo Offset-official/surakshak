@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import StreamingHttpResponse, HttpResponse, JsonResponse
 from django.views.decorators import gzip
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from .utils.camera_manager import CameraManager
 import time
 from .models import Camera, Incident, Respondent
@@ -12,10 +13,37 @@ from twilio.rest import Client
 import os
 from dotenv import load_dotenv
 from django.templatetags.static import static
+import logging 
+# import model form 
+from .models import InferenceSchedule, Log, IncidentType
+from django.forms import ModelForm
+from django import forms
+from surakshak.utils.system_config import SystemConfig
+from django.conf import settings as django_settings
+from surakshak.utils.system_config import resolve_lockdown
 
+
+logger = logging.getLogger(__name__)
 
 def homepage(request):
     return render(request, "homepage.html")
+
+
+@require_GET
+def heartbeat(request):
+    """
+    Returns the current system status.
+    Expected response format: {'success': True, 'status': 'ACTIVE'/'INACTIVE', 'lockdown': True/False}
+    """
+    try:
+        status = SystemConfig.instrusion_state
+        ld = SystemConfig.lockdown
+        logger.debug(f"Heartbeat check: {status}, Lockdown: {ld}")
+        incident_id = SystemConfig.incident_id
+        return JsonResponse({'success': True, 'status': status, "lockdown" : ld, "incident_id": incident_id})
+    except Exception as e:
+        logger.error(f"Heartbeat error: {e}")
+        return JsonResponse({'success': False, 'error': 'Failed to retrieve system status'}, status=500)
 
 
 @gzip.gzip_page
@@ -60,34 +88,31 @@ def notify_page(request):
 
 
 def logs_page(request):
-    return render(request, "logs.html")
+    logs = Log.objects.all().order_by("-created_at")
+    return render(request, "logs.html", {"logs": logs})
 
 
 def settings(request):
     return render(request, "settings.html")
 
 
-@csrf_exempt
+@require_POST
 def toggle_status(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            state = data.get("state", False)
-            request.session["toggle_state"] = state
-            if state:
-                pass
-                # Subham you may start your inference engine here
-            return JsonResponse({"success": True, "state": state})
-        except Exception as e:
-            return JsonResponse({"success": False, "error": str(e)}, status=500)
-    elif request.method == "GET":
-        # Return the stored state
-        state = request.session.get("toggle_state", False)
-        return JsonResponse({"success": True, "state": state})
-    return JsonResponse(
-        {"success": False, "error": "Invalid request method"}, status=405
-    )
+    """
+    Toggles the system status based on the request.
+    Expects JSON body: {'state': True/False}
+    """
+    try:
+        SystemConfig.toggle()
+        logger.info(f"System status toggled to: {SystemConfig.instrusion_state}")
 
+        return JsonResponse({'success': True, 'status': SystemConfig.instrusion_state})
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON in toggle_status request")
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        logger.error(f"Toggle status error: {e}")
+        return JsonResponse({'success': False, 'error': 'Failed to toggle system status'}, status=500)
 
 def notify_api(
     request,
@@ -115,20 +140,11 @@ def notify_api(
             Respondents = RespondentSerializer(Respondent.objects.all(), many=True).data
             sample_url = "https://www.incident_page.com"
             main_text = f"Dear Surakshak,\n\nPlease check out the incident snippet and other information at {sample_url} to resolve the alert as soon as possible.  \n\nRegards, \nInstitution"
-            subject = f"Alert! Incident Type: {incident_data["incident_type"]} Detected at {incident_data["camera"]}"
+            subject = f"Alert! Incident Type: {incident_data['incident_type']} Detected at {incident_data['camera']}"
             phnumbers = [respondent["phone"] for respondent in Respondents]
             account_sid = os.getenv("WHATSAPP_ACCOUNT_SID")
             auth_token = os.getenv("WHATSAPP_AUTH_TOKEN")
 
-            if "email" in modes:
-                mails = [respondent["email"] for respondent in Respondents]
-                message = (
-                    subject,
-                    main_text,
-                    "abhinavkun26@gmail.com",
-                    mails,
-                )
-                send_mail(*message, fail_silently=False)
             client = Client(account_sid, auth_token)
             phnumbers = ["7014206208"]
             if "sms" in modes:
@@ -170,6 +186,117 @@ def notify_api(
     return JsonResponse(
         {"success": False, "error": "Invalid request method"}, status=405
     )
+
+def timings_page(request):
+    # create model form 
+    class InferenceScheduleForm(ModelForm):
+        class Meta:
+            model = InferenceSchedule
+            fields = "__all__" 
+            widgets = {
+                'start_time': forms.TimeInput(attrs={'type': 'time'}),
+                'end_time': forms.TimeInput(attrs={'type': 'time'}),
+                'monday': forms.CheckboxInput(),
+                'tuesday': forms.CheckboxInput(),
+                'wednesday': forms.CheckboxInput(),
+                'thursday': forms.CheckboxInput(),
+                'friday': forms.CheckboxInput(),
+                'saturday': forms.CheckboxInput(),
+                'sunday': forms.CheckboxInput(),
+            }  
+
+
+    schedule = InferenceSchedule.objects.get(pk=1)
+    
+    if request.method == "POST":
+        form = InferenceScheduleForm(request.POST, instance=schedule)
+        if form.is_valid():
+            form.save()
+            return render(request, "timings.html", {"form": form, "success": True})
+        return JsonResponse({"success": False, "error": form.errors}, status=400)
+    elif request.method == "GET":
+        form = InferenceScheduleForm(instance=schedule)
+        # render the form
+        return render(request, "timings.html", {"form": form})
+
+
+
+
+
+    inferenceSchedule = form.objects.get(pk=1)
+
+
+    return render(request, "timings.html")
+
+@require_http_methods(["GET", "POST"])
+def resolve(request, incident_id):
+    """
+    Handles the resolution of an intrusion incident.
+
+    GET:
+        - If incident exists:
+            - If resolved: Show details with "Resolved" message.
+            - If not resolved: Show details with "Resolve" button + a dropdown
+              to select the responding person.
+        - If incident does not exist:
+            - Show "Incident not found" message.
+
+    POST:
+        - Captures which respondent was selected.
+        - Marks the incident as resolved, sets resolver = selected_respondent,
+          and redirects to show the updated state.
+    """
+
+    try:
+        incident_instance = Incident.objects.get(pk=incident_id)
+    except Incident.DoesNotExist:
+        # Incident not found
+        return render(request, "resolve.html", {"incident_found": False})
+
+    # if str(incident_id) != str(SystemConfig.incident_id):
+    #     return render(request, "resolve.html", {"incident_found": False})
+
+    if request.method == "POST":
+        # Attempt to resolve the incident
+        if not incident_instance.resolved:
+            selected_respondent = request.POST.get("selected_respondent", "")
+            incident_instance.resolved = True
+            selected_respondent_instance = Respondent.objects.filter(name=selected_respondent).first()
+            incident_instance.resolver = selected_respondent_instance  # Store the name of the resolving respondent
+            incident_instance.save()
+
+            # Call your lockdown release function if needed
+            resolve_lockdown()
+
+            # Optionally, you can add a success message here (using Django messages framework)
+            return redirect('resolve', incident_id=incident_id)
+        else:
+            # Incident is already resolved; you might want to redirect or show a message
+            return redirect('resolve', incident_id=incident_id)
+
+    # GET request
+    # Example: retrieve respondents from an IncidentType (like "Trespassing")
+    # Adjust the logic here to match your filtering needs
+    trespassing_type = IncidentType.objects.filter(type_name="Trespassing").first()
+    if trespassing_type:
+        respondents = trespassing_type.respondents.all()
+        respondent_names = [resp.name for resp in respondents]
+    else:
+        # Fallback: no matching incident type or no respondents
+        respondent_names = []
+
+    context = {
+        "incident_found": True,
+        "resolved": incident_instance.resolved,
+        "incident_type": incident_instance.incident_type,
+        "image_url": incident_instance.image.url if incident_instance.image else "",
+        "camera_name": incident_instance.camera,
+        "incident_time": incident_instance.created_at,
+        "incident_id": incident_instance.id,
+        "respondent_names": respondent_names,
+    }
+    logger.info("Incident image URL: %s", context["image_url"])
+    return render(request, "resolve.html", context)
 
 ## Settings -> Respondents Page
 def respondents_page(request):

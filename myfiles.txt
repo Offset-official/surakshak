@@ -1,0 +1,2 @@
+ffmpeg -re -stream_loop -1 -i stream.mp4 -c:v libx264 -r 1 -c:a aac -b:a 128k -f rtsp rtsp://localhost:8554/mystream
+sudo docker run --rm -it --network=host bluenviron/mediamtx
