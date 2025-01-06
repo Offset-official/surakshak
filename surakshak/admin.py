@@ -12,12 +12,6 @@ class RespondentAdmin(admin.ModelAdmin):
 
     incident_types_display.short_description = "Incident Types"
 
-    def save_model(self, request, obj, form, change):
-        incident_types = form.cleaned_data['incident_types']
-        obj.incident_types.set(incident_types.distinct())  # 'distinct' ensures unique items
-
-        super().save_model(request, obj, form, change)
-
 class IncidentAdmin(admin.ModelAdmin):
     list_display = ('id', 'created_at', 'incident_type', 'camera', 'resolved', 'resolver')
 
