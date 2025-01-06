@@ -31,6 +31,7 @@
       <div class="flex items-center space-x-6">
         <!-- Heartbeat Indicator -->
         <div class="relative">
+          <!-- Heartbeat Icon -->
           <svg
             id="heartbeat-icon"
             xmlns="http://www.w3.org/2000/svg"
@@ -50,6 +51,24 @@
                  c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
             />
           </svg>
+          
+          <!-- Caution Icon -->
+          <svg
+            id="caution-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 text-yellow-400 transition-colors duration-300 hidden"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          
           <!-- Tooltip -->
           <span
             id="heartbeat-tooltip"
@@ -65,7 +84,7 @@
             <input
               type="checkbox"
               class="sr-only peer"
-              onchange="toggleState(this.checked)"
+              onchange="toggleState()"
               id="status-toggle"
             />
             <span
@@ -107,30 +126,60 @@
       document.addEventListener("DOMContentLoaded", () => {
         // Grab references once
         const heartbeatIcon = document.getElementById("heartbeat-icon");
+        const cautionIcon = document.getElementById("caution-icon");
         const heartbeatTooltip = document.getElementById("heartbeat-tooltip");
         const toggleInput = document.getElementById("status-toggle");
         const toggleLabel = document.getElementById("toggle-label");
 
-        // Heartbeat Indicator Function
-        function updateHeartbeatIcon(isAlive) {
-          if (isAlive) {
-            heartbeatIcon.classList.remove("text-gray-400");
-            heartbeatIcon.classList.add("text-red-500");
-            heartbeatTooltip.innerText = "System is functional";
-          } else {
-            heartbeatIcon.classList.remove("text-red-500");
-            heartbeatIcon.classList.add("text-gray-400");
-            heartbeatTooltip.innerText = "System is down";
-          }
-        }
-
-        // Tooltip Show/Hide Functions
+        // Function to show tooltip
         function showTooltip() {
           heartbeatTooltip.classList.remove("hidden");
         }
 
+        // Function to hide tooltip
         function hideTooltip() {
           heartbeatTooltip.classList.add("hidden");
+        }
+
+        // Heartbeat Indicator Function
+        function updateIndicators(isAlive, lockdown, status) {
+          if (lockdown) {
+            // Show caution icon
+            heartbeatIcon.classList.add("hidden");
+            cautionIcon.classList.remove("hidden");
+            heartbeatTooltip.innerText = "System is in lockdown";
+            heartbeatTooltip.classList.remove("hidden");
+            // Disable toggle switch
+            toggleInput.checked = false;
+            toggleLabel.innerText = "Inactive";
+            toggleInput.disabled = true;
+          } else {
+            // Show heartbeat icon
+            heartbeatIcon.classList.remove("hidden");
+            cautionIcon.classList.add("hidden");
+            heartbeatTooltip.classList.remove("hidden");
+
+            if (isAlive) {
+              heartbeatIcon.classList.remove("text-gray-400");
+              heartbeatIcon.classList.add("text-red-500");
+              heartbeatTooltip.innerText = "System is functional";
+
+              // Update toggle based on status
+              toggleInput.checked = status === "ACTIVE";
+              toggleLabel.innerText = status === "ACTIVE" ? "Active" : "Inactive";
+              // Enable toggle switch
+              toggleInput.disabled = false;
+            } else {
+              heartbeatIcon.classList.remove("text-red-500");
+              heartbeatIcon.classList.add("text-gray-400");
+              heartbeatTooltip.innerText = "System is down";
+
+              // Disable toggle switch
+              toggleInput.checked = false;
+              toggleLabel.innerText = "Inactive";
+              toggleInput.disabled = true;
+            }
+          }
         }
 
         // Fetch heartbeat
@@ -144,26 +193,24 @@
             })
             .then((data) => {
               if (data.success) {
-                // System is alive
-                updateHeartbeatIcon(true);
-
                 const status = data.status; // 'ACTIVE' or 'INACTIVE'
-                toggleInput.checked = status === "ACTIVE";
-                toggleLabel.innerText = status === "ACTIVE" ? "Active" : "Inactive";
+                const lockdown = data.lockdown; // True or False
+                const isAlive = true; // Since heartbeat responded successfully
 
-                const heartbeatContainer = heartbeatIcon.parentElement;
-                heartbeatContainer.removeEventListener("mouseenter", showTooltip);
-                heartbeatContainer.removeEventListener("mouseleave", hideTooltip);
-                heartbeatContainer.addEventListener("mouseenter", showTooltip);
-                heartbeatContainer.addEventListener("mouseleave", hideTooltip);
+                updateIndicators(isAlive, lockdown, status);
               } else {
-                // System responded but indicates failure
-                updateHeartbeatIcon(false);
+                // Heartbeat responded with success: False
+                const isAlive = false;
+                const lockdown = false; // Assuming no lockdown if heartbeat failed
+                updateIndicators(isAlive, lockdown, null);
               }
             })
             .catch((error) => {
               console.error("Heartbeat fetch error:", error);
-              updateHeartbeatIcon(false);
+              // Assume system is down if heartbeat fetch fails
+              const isAlive = false;
+              const lockdown = false;
+              updateIndicators(isAlive, lockdown, null);
             });
         }
 
@@ -171,16 +218,21 @@
         fetchHeartbeat();
         // Poll heartbeat every second
         setInterval(fetchHeartbeat, 1000);
+
+        // Tooltip event listeners
+        const heartbeatContainer = heartbeatIcon.parentElement;
+        heartbeatContainer.addEventListener("mouseenter", showTooltip);
+        heartbeatContainer.addEventListener("mouseleave", hideTooltip);
       });
 
       // Toggle Button Function
-      async function toggleState(state) {
+      async function toggleState() {
         // If a toggle request is already in progress, ignore subsequent clicks
         if (isToggling) return;
         isToggling = true;
 
         const toggleInput = document.getElementById("status-toggle");
-        toggleInput.disabled = true; // Disable the button
+        toggleInput.disabled = true; // Disable the button to prevent multiple clicks
 
         try {
           const response = await fetch("{% url 'toggle_status' %}", {
@@ -189,7 +241,7 @@
               "Content-Type": "application/json",
               "X-CSRFToken": "{{ csrf_token }}",
             },
-            body: JSON.stringify({ state }),
+            body: JSON.stringify({}), // Empty body since backend toggles state
           });
 
           if (!response.ok) {
@@ -202,10 +254,14 @@
             location.reload();
           } else {
             console.error("Toggle failed:", data.error);
+            // Revert the toggle button state if toggle failed
+            toggleInput.checked = !toggleInput.checked;
             alert("Failed to toggle system status. Please try again.");
           }
         } catch (error) {
           console.error("Error toggling system status:", error);
+          // Revert the toggle button state if an error occurred
+          toggleInput.checked = !toggleInput.checked;
           alert("An error occurred while toggling the system status.");
         } finally {
           // Re-enable after the request finishes
