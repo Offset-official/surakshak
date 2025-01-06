@@ -1,0 +1,112 @@
+<!-- resolve.html -->
+
+{% load static %}
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Resolve Incident - Surakshak</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    {% tailwind_preload_css %}
+    {% tailwind_css %}
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Custom styles if needed */
+    </style>
+  </head>
+
+  <body class="bg-primaryBg text-textColor font-sans flex flex-col min-h-screen">
+    <!-- Header Section -->
+    <header class="flex justify-center items-center py-4">
+      <a class="flex gap-4 items-center" href="/">
+        <div class="h-full">
+          <img src="{% static 'logo.svg' %}" alt="logo" class="w-16 h-16" />
+        </div>
+        <div class="flex flex-col">
+          <div class="text-3xl font-bold">Surakshak</div>
+          <div class="text-sm">A Smart Security System for Institutions</div>
+        </div>
+      </a>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4">
+      {% if not incident_found %}
+        <!-- Incident Not Found -->
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong class="font-bold">Incident Not Found!</strong>
+          <span class="block sm:inline">The incident you are trying to resolve does not exist.</span>
+        </div>
+      {% else %}
+        <div class="bg-primaryHighlight shadow-md rounded-lg p-6 text-white">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+            <div>
+              <h2 class="text-2xl font-semibold mb-2">Incident Details</h2>
+              <p class="mb-1"><strong>Type:</strong> {{ incident_type }}</p>
+              <p class="mb-1"><strong>Camera:</strong> {{ camera_name }}</p>
+              <p class="mb-1"><strong>Time:</strong> {{ incident_time|date:"F j, Y, g:i a" }}</p>
+            </div>
+
+            {% if resolved %}
+              <div>
+                <span class="inline-block bg-green-200 text-green-800 text-sm px-4 py-2 rounded-full">
+                  Resolved
+                </span>
+              </div>
+            {% else %}
+              <!-- Resolve Form -->
+              <form method="POST" action="{% url 'resolve' incident_id %}" class="mt-4 sm:mt-0 flex flex-col sm:flex-row sm:items-center gap-2">
+                {% csrf_token %}
+                <!-- Dropdown for respondents -->
+                <label for="selected_respondent" class="font-semibold">Resolver:</label>
+                <select
+                  name="selected_respondent"
+                  id="selected_respondent"
+                  class="bg-white text-black py-2 px-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="" disabled selected>Select a respondent</option>
+                  {% for respondent_name in respondent_names %}
+                    <option value="{{ respondent_name }}">{{ respondent_name }}</option>
+                  {% endfor %}
+                </select>
+
+                <button
+                  type="submit"
+                  class="bg-red-700 text-white px-4 py-2 rounded hover:bg-red-800 transition"
+                >
+                  Resolve
+                </button>
+              </form>
+            {% endif %}
+          </div>
+
+          <!-- Incident Image -->
+          <div class="mt-6">
+            <h3 class="text-xl font-semibold mb-2">Incident Image</h3>
+            {% if image_url %}
+              <img src="{{ image_url }}" alt="Incident Image" class="w-full h-auto rounded">
+            {% else %}
+              <p class="text-sm text-gray-300 italic">No image available for this incident.</p>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-primaryBg text-textColor text-center py-4">
+      Surakshak &copy; 2025 All Rights Reserved.
+    </footer>
+
+    <!-- JavaScript (Optional) -->
+    <script>
+      // Add any JavaScript if needed
+    </script>
+  </body>
+</html>
