@@ -1,7 +1,7 @@
 import threading
 
 class CoordinatorThread:
-    def __init__(self, func, camera_name):
-        self.thread = threading.Thread(target=func, daemon=True, args=[camera_name])
+    def __init__(self, *args):
+        self.thread = threading.Thread(target=args[0], daemon=True, args=args[1:])
         self.thread.start()
         

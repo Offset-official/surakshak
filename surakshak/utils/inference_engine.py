@@ -41,8 +41,6 @@ def intrusion_detector(frame, camera_name):
             break
     if human_detected:
         logger.critical("Human detected!")
-        output_image_name = str(uuid.uuid4()) + ".jpg"
-        cv2.imwrite(settings.MEDIA_ROOT / output_image_name, output_image)
 
         # save image somewhere
         # start recording 5s clip of incident
@@ -53,7 +51,10 @@ def intrusion_detector(frame, camera_name):
         with lockdown_lock:
             if not system_config.SystemConfig.lockdown: 
                 # the thread that reaches this first will call the lockdown
-                coordinator_thread.CoordinatorThread(system_config.enter_lockdown, camera_name)
+                output_image_name = str(uuid.uuid4()) + ".jpg"
+                cv2.imwrite(settings.MEDIA_ROOT / output_image_name, output_image)
+                logger.info("Intrusion image saved. Intrusion image saved. Intrusion image saved.")
+                coordinator_thread.CoordinatorThread(system_config.enter_lockdown, camera_name, output_image_name)
         # once lockdown mode is over, return to normal operation
 
 
