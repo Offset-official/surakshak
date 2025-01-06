@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import StreamingHttpResponse, HttpResponse, JsonResponse
 from django.views.decorators import gzip
 from django.views.decorators.http import require_GET, require_POST
@@ -8,7 +8,7 @@ from .models import Camera, Incident, Respondent
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.core.mail import send_mail
-from .serializers import IncidentSerializer, RespondentSerializer
+from .serializers import IncidentSerializer, RespondentSerializer, IncidentTypeSerializer
 from twilio.rest import Client
 import os
 from dotenv import load_dotenv
@@ -193,7 +193,6 @@ def notify_api(
         {"success": False, "error": "Invalid request method"}, status=405
     )
 
-
 def timings_page(request):
     # create model form 
     class InferenceScheduleForm(ModelForm):
@@ -237,3 +236,24 @@ def timings_page(request):
 
 def resolve(request, incident_id):
     return render(request, "layout.html")
+
+## Settings -> Respondents Page
+def respondents_page(request):
+    pop_up = request.GET.get("pop_up", "false").lower() == "true"
+    return render(request, "settings/respondents.html", {
+        "headers": ["ID", "Name", "Phone", "Email", "Active"],
+        "respondents": RespondentSerializer(Respondent.objects.all(), many=True).data,
+        "pop_up": pop_up,
+    })
+
+def add_respondent(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        phone = request.POST.get("phone")
+        email = request.POST.get("email")
+        active = request.POST.get("is_active") == "on"
+        respondent = Respondent.objects.create(name=name, phone=phone, email=email, is_active=active)
+
+        respondent.save()
+        
+    return redirect('respondents_page')
