@@ -3,6 +3,8 @@ import time
 import datetime
 import logging 
 import surakshak.utils.inference_engine as inference_engine
+from django.core.files import File
+from surakshak.utils.notifs import send_all_notifs
 
 logger = logging.getLogger(__name__)
 
@@ -72,20 +74,28 @@ def state_switch(InferenceSchedule):
         time.sleep(20)
         continue
         
-def enter_lockdown(camera_name, image_name):
-    from surakshak.models import Incident
+def enter_lockdown(camera_name, file_obj):
+    from surakshak.models import Incident, IncidentType
     SystemConfig.lockdown = True # will disable toggle switch and periodic state switch, boot config is not a problem
     SystemConfig.instrusion_state = "INACTIVE" # for system consistency
     logger.info("ENTERING LOCKDOWN MODE.")
     inference_engine.InferenceEngine.stop() # all camera inferences will stop
     createdIncident = Incident.objects.create(
-        # incident_type = "Trespassing",
+        incident_type = "Trespassing",
         camera=camera_name,
         resolved = False,
         resolver = None,
-        image_uuid=image_name
+        image=file_obj
     )
     SystemConfig.incident_id = createdIncident.id
+
+    # send notifs 
+    respondents = IncidentType.objects.filter(type_name="Trespassing").first().respondents.all()
+    for respondent in respondents:
+        if respondent.is_active:
+            print(respondent)   
+            # abhinav implement the function below
+            send_all_notifs(incident_id=createdIncident.id, incident_type='Trespassing', phone=respondent.phone, email=respondent.email)
                 
 def resolve_lockdown():
     SystemConfig.lockdown = False 
