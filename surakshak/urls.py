@@ -8,6 +8,8 @@ from .views import (
     settings,
     toggle_status,
     notify_api,
+    respondents_page,
+    add_respondent
 )
 
 urlpatterns = [
@@ -20,4 +22,6 @@ urlpatterns = [
     path("toggle-status/", toggle_status, name="toggle_status"),
     path("__reload__/", include("django_browser_reload.urls")),
     path("notify_api/", notify_api, name="notify_api"),
+    path("settings/respondents/", respondents_page, name="respondents_page"),
+    path("settings/add_respondent/", add_respondent, name="add_respondent"),
 ]
