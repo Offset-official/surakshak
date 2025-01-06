@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 class SystemConfig:
     instrusion_state = ""
     lockdown = False
+    incident_id = None
 
     @classmethod
     def set_intrusion(cls, val):
@@ -71,21 +72,25 @@ def state_switch(InferenceSchedule):
         time.sleep(20)
         continue
         
-def enter_lockdown(camera_name):
+def enter_lockdown(camera_name, image_name):
     from surakshak.models import Incident
     SystemConfig.lockdown = True # will disable toggle switch and periodic state switch, boot config is not a problem
     SystemConfig.instrusion_state = "INACTIVE" # for system consistency
     logger.info("ENTERING LOCKDOWN MODE.")
     inference_engine.InferenceEngine.stop() # all camera inferences will stop
-    Incident.objects.create(
-        incident_type = "Trespassing",
+    createdIncident = Incident.objects.create(
+        # incident_type = "Trespassing",
         camera=camera_name,
         resolved = False,
-        resolver = None
+        resolver = None,
+        image_uuid=image_name
     )
+    SystemConfig.incident_id = createdIncident.id
                 
 def resolve_lockdown():
     SystemConfig.lockdown = False 
     SystemConfig.instrusion_state = "ACTIVE"
+    SystemConfig.incident_id = None
     inference_engine.InferenceEngine.start() 
+
     

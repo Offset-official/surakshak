@@ -36,10 +36,12 @@ def heartbeat(request):
         status = SystemConfig.instrusion_state
         ld = SystemConfig.lockdown
         logger.debug(f"Heartbeat check: {status}, Lockdown: {ld}")
-        return JsonResponse({'success': True, 'status': status, "lockdown" : ld})
+        incident_id = SystemConfig.incident_id
+        return JsonResponse({'success': True, 'status': status, "lockdown" : ld, "incident_id": incident_id})
     except Exception as e:
         logger.error(f"Heartbeat error: {e}")
         return JsonResponse({'success': False, 'error': 'Failed to retrieve system status'}, status=500)
+
 
 @gzip.gzip_page
 def video_feed(request, camera_name):
@@ -232,3 +234,6 @@ def timings_page(request):
 
 
     return render(request, "timings.html")
+
+def resolve(request, incident_id):
+    return render(request, "layout.html")

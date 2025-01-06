@@ -3,7 +3,7 @@ from django.utils.timezone import now
 
 
 class IncidentType(models.Model):
-    type_name = models.CharField(max_length=50)  # e.g., "Trespassing", "Fire"
+    type_name = models.CharField(max_length=50, null=True)  # e.g., "Trespassing", "Fire"
     respondents = models.ManyToManyField("Respondent", related_name="incident_types", null=True)  # Respondents for this type
 
     def __str__(self):
@@ -35,8 +35,10 @@ class Incident(models.Model):
     id = models.AutoField(primary_key=True)
     created_at = models.DateTimeField(default=now)  
     incident_type = models.ForeignKey("IncidentType", on_delete=models.CASCADE, null=True)  
-    camera = models.ForeignKey("Camera", on_delete=models.CASCADE, to_field="name") 
+    # camera = models.ForeignKey("Camera", on_delete=models.CASCADE, related_name="name") 
+    camera = models.CharField(max_length=200)
     resolved = models.BooleanField(default=False)
+    image_uuid = models.CharField(max_length=200, null=True)
     resolver = models.ForeignKey("Respondent", on_delete=models.CASCADE, null=True, blank=True)  
     
     def __str__(self):
