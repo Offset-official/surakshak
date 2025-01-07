@@ -239,7 +239,7 @@ def resolve(request, incident_id):
 
     GET:
         - If incident exists:
-            - If resolved: Show details with "Resolved" message.
+            - If resolved: Show details with "Resolved" message and resolver's name.
             - If not resolved: Show details with "Resolve" button + a dropdown
               to select the responding person.
         - If incident does not exist:
@@ -250,29 +250,60 @@ def resolve(request, incident_id):
         - Marks the incident as resolved, sets resolver = selected_respondent,
           and redirects to show the updated state.
     """
-
     try:
         incident_instance = Incident.objects.get(pk=incident_id)
     except Incident.DoesNotExist:
         # Incident not found
         return render(request, "resolve.html", {"incident_found": False})
 
-    # if str(incident_id) != str(SystemConfig.incident_id):
-    #     return render(request, "resolve.html", {"incident_found": False})
-
     if request.method == "POST":
         # Attempt to resolve the incident
         if not incident_instance.resolved:
             selected_respondent = request.POST.get("selected_respondent", "")
-            incident_instance.resolved = True
+            if not selected_respondent:
+                # No respondent selected
+                logger.warning("No respondent selected for resolving the incident.")
+                return render(request, "resolve.html", {
+                    "incident_found": True,
+                    "resolved": False,
+                    "incident_type": incident_instance.incident_type,
+                    "image_url": incident_instance.image.url if incident_instance.image else "",
+                    "camera_name": incident_instance.camera,
+                    "incident_time": incident_instance.created_at,
+                    "incident_id": incident_instance.id,
+                    "respondent_names": get_respondent_names(),
+                    "error_message": "Please select a respondent to resolve the incident."
+                })
+
             selected_respondent_instance = Respondent.objects.filter(name=selected_respondent).first()
-            incident_instance.resolver = selected_respondent_instance  # Store the name of the resolving respondent
+            if not selected_respondent_instance:
+                # Respondent does not exist
+                logger.warning(f"Selected respondent '{selected_respondent}' does not exist.")
+                return render(request, "resolve.html", {
+                    "incident_found": True,
+                    "resolved": False,
+                    "incident_type": incident_instance.incident_type,
+                    "image_url": incident_instance.image.url if incident_instance.image else "",
+                    "camera_name": incident_instance.camera,
+                    "incident_time": incident_instance.created_at,
+                    "incident_id": incident_instance.id,
+                    "respondent_names": get_respondent_names(),
+                    "error_message": "Selected respondent does not exist."
+                })
+
+            # Mark the incident as resolved
+            incident_instance.resolved = True
+            incident_instance.resolver = selected_respondent_instance  # Assuming resolver is a ForeignKey to Respondent
             incident_instance.save()
 
             # Call your lockdown release function if needed
             resolve_lockdown()
 
-            # Optionally, you can add a success message here (using Django messages framework)
+            logger.info(f"Incident {incident_id} resolved by {selected_respondent_instance.name}.")
+
+            # Optionally, add a success message using Django messages framework
+            # messages.success(request, "Incident resolved successfully.")
+
             return redirect('resolve', incident_id=incident_id)
         else:
             # Incident is already resolved; you might want to redirect or show a message
@@ -289,6 +320,9 @@ def resolve(request, incident_id):
         # Fallback: no matching incident type or no respondents
         respondent_names = []
 
+    # If the incident is resolved, get the resolver's name
+    resolver_name = incident_instance.resolver.name if incident_instance.resolver else ""
+
     context = {
         "incident_found": True,
         "resolved": incident_instance.resolved,
@@ -298,9 +332,21 @@ def resolve(request, incident_id):
         "incident_time": incident_instance.created_at,
         "incident_id": incident_instance.id,
         "respondent_names": respondent_names,
+        "resolver_name": resolver_name,  # Add resolver's name to context
     }
     # logger.info("Incident image URL: %s", context["image_url"])
     return render(request, "resolve.html", context)
+
+def get_respondent_names():
+    """
+    Helper function to retrieve respondent names.
+    Adjust the logic based on how respondents are related to IncidentType.
+    """
+    trespassing_type = IncidentType.objects.filter(type_name="Trespassing").first()
+    if trespassing_type:
+        respondents = trespassing_type.respondents.all()
+        return [resp.name for resp in respondents]
+    return []
 
 ## Settings -> Respondents Page
 def respondents_page(request):
