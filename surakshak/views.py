@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import StreamingHttpResponse, HttpResponse, JsonResponse
 from django.views.decorators import gzip
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
@@ -82,7 +82,7 @@ def generate_frames(camera):
 
 def stream_page(request):
     # get names of 3 cameras
-    cctvs = Camera.objects.all()[:3]
+    cctvs = Camera.objects.all()
     cctvNames = [cctv.name for cctv in cctvs]
     return render(request, "streams.html", {"cctvs": cctvNames})
 
@@ -456,3 +456,18 @@ def camera_adjust(request):
             return redirect('camera_adjust')
     
     return render(request, 'camera_adjust.html', context)
+
+
+@require_http_methods(["GET"])
+def single_stream_page(request, camera_name):
+    """
+    Displays a single camera's stream based on the selected camera name.
+    """
+    # Retrieve the camera instance or return 404 if not found
+    camera = get_object_or_404(Camera, name=camera_name)
+
+    context = {
+        'camera_name': camera.name,
+    }
+
+    return render(request, "single_stream.html", context)
