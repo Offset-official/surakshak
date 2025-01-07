@@ -53,10 +53,15 @@
             </div>
 
             {% if resolved %}
-              <div>
+              <div class="flex items-center space-x-2">
                 <span class="inline-block bg-green-200 text-green-800 text-sm px-4 py-2 rounded-full">
                   Resolved
                 </span>
+                {% if resolver_name %}
+                  <span class="text-sm">
+                    <strong>Resolved by:</strong> {{ resolver_name }}
+                  </span>
+                {% endif %}
               </div>
             {% else %}
               <!-- Resolve Form -->
@@ -95,6 +100,12 @@
               <p class="text-sm text-gray-300 italic">No image available for this incident.</p>
             {% endif %}
           </div>
+
+          {% if error_message %}
+            <div class="mt-4 bg-red-200 text-red-800 p-3 rounded">
+              {{ error_message }}
+            </div>
+          {% endif %}
         </div>
       {% endif %}
     </main>
