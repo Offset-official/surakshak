@@ -5,8 +5,11 @@ import logging
 import surakshak.utils.inference_engine as inference_engine
 from django.core.files import File
 from surakshak.utils.notifs import send_all_notifs
+from surakshak.utils.logs import MyHandler
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MyHandler())
+
 
 class SystemConfig:
     instrusion_state = ""
@@ -93,7 +96,7 @@ def enter_lockdown(camera_name, file_obj):
     respondents = IncidentType.objects.filter(type_name="Trespassing").first().respondents.all()
     for respondent in respondents:
         if respondent.is_active:
-            print(respondent)   
+            # print(respondent)   
             # abhinav implement the function below
             send_all_notifs(incident_id=createdIncident.id, incident_type='Trespassing', phone=respondent.phone, email=respondent.email)
                 

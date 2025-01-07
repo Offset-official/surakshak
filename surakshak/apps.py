@@ -2,6 +2,7 @@ from django.apps import AppConfig
 from surakshak.utils.camera_manager import CameraManager
 from surakshak.utils.inference_engine import InferenceEngine
 from surakshak.utils.system_config import SystemConfig
+from surakshak.utils.logs import MyHandler
 import threading
 import os
 import logging
@@ -11,6 +12,7 @@ from dotenv import load_dotenv
 
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MyHandler())
 
 
 class SurakshakConfig(AppConfig):
@@ -35,7 +37,7 @@ class SurakshakConfig(AppConfig):
             streams.append(stream)
 
         def initialize_cameras():
-            for stream in streams[:2]:
+            for stream in streams:
                 CameraManager.add_camera(stream["name"], stream["url"])
                 # each camera is running in a separate thread
             print("All camera fetchers started.")            
@@ -55,7 +57,7 @@ class SurakshakConfig(AppConfig):
         hour_now = time_now.hour 
         min_now = time_now.minute
         inactive_schedule = InferenceSchedule.objects.get(pk=1)
-        print(inactive_schedule)
+        # print(inactive_schedule)
         today_weekday = time_now.weekday()
         mappings = {
             0: "monday", 1:"tuesday", 2: "wednesday", 3: "thursday", 4:"friday", 5:"saturday", 6:"sunday"
@@ -71,8 +73,9 @@ class SurakshakConfig(AppConfig):
             inactive_schdule_end_min = inactive_schdule_end_time.minute
             if (inactive_schedule_start_hour, inactive_schedule_start_min) < (hour_now, min_now) < (inactive_schdule_end_hour, inactive_schdule_end_min):
                 logger.info("Starting system with INACTIVE mode.")
+
                 SystemConfig.set_intrusion("INACTIVE")
-                InferenceEngine.stop() # does nothing, for completeness
+                # InferenceEngine.stop() # does nothing, for completeness
             else:
                 logger.info("Starting system with ACTIVE mode.") # school is closed
                 SystemConfig.set_intrusion("ACTIVE")
