@@ -1,12 +1,12 @@
-{% extends "layout1.html" %}
+{% extends "settings.html" %}
 
-{% block content %}
-<div class="flex text-5xl font-bold mb-5">Respondents</div>
+{% block settings_content %}
+<!-- <div class="flex text-5xl font-bold mb-5">Respondents</div> -->
 
 {% if pop_up %}
-<div class="flex justify-center w-screen absolute">
+<div class="flex justify-center items-center h-screen w-screen bg-black bg-opacity-50 fixed top-0 left-0 z-50">
     <div class="bg-primaryHighlight p-6 w-[500px] absolute">
-        <div class="flex text-4xl font-bold text-white mb-5 justify-center">Add Respondent</div>
+        <div class="flex text-4xl font-bold text-white mb-5 justify-left">Add Respondent</div>
         <form name="respondents" method="post" action="../add_respondent/">
             {% csrf_token %}
             <div class="mb-5">
@@ -99,10 +99,10 @@
     </div>
 </div>
 </div>
-<div class="flex flex-col sm:flex-row sm:justify-left">
+<div class="flex flex-col sm:flex-row sm:justify-centre">
     {% if not pop_up %}
     <a class="" href="?pop_up=true">
-        <div class="w-60 mx-left bg-primaryHighlight shadow-md rounded-lg p-3 space-y-1">
+        <div class="w-60 mx-auto bg-primaryHighlight shadow-md rounded-lg p-3 space-y-1">
             <button class="py-2 px-4 bg-primaryBg text-white rounded hover:bg-accent">Add</button>
     </a>
     <button class="py-2 px-4 bg-primaryBg text-white rounded hover:bg-accent">Edit</button>
@@ -111,4 +111,4 @@
     {% endif %}
 </div>
 
-{% endblock content %}
+{% endblock settings_content %}
