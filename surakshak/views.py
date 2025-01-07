@@ -396,7 +396,7 @@ def camera_adjust(request):
             
             
             frame = CameraManager._cameras[camera.name].frame
-            print(frame)
+            # print(frame)
             
             if frame is None:
                 messages.error(request, 'Failed to capture image from the camera. Is camera viewable in streams?')

@@ -57,7 +57,7 @@ class SurakshakConfig(AppConfig):
         hour_now = time_now.hour 
         min_now = time_now.minute
         inactive_schedule = InferenceSchedule.objects.get(pk=1)
-        print(inactive_schedule)
+        # print(inactive_schedule)
         today_weekday = time_now.weekday()
         mappings = {
             0: "monday", 1:"tuesday", 2: "wednesday", 3: "thursday", 4:"friday", 5:"saturday", 6:"sunday"
