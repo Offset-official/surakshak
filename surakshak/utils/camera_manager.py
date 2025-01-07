@@ -3,8 +3,10 @@ import threading
 import time
 import logging
 import os 
+from surakshak.utils.logs import MyHandler
 
 logger = logging.getLogger("camera")
+logger.addHandler(MyHandler())
 
 class VideoCamera:
     def __init__(self, rtsp_url, name):

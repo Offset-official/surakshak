@@ -5,8 +5,11 @@ import logging
 import surakshak.utils.inference_engine as inference_engine
 from django.core.files import File
 from surakshak.utils.notifs import send_all_notifs
+from surakshak.utils.logs import MyHandler
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MyHandler())
+
 
 class SystemConfig:
     instrusion_state = ""
