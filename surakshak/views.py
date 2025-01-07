@@ -22,7 +22,9 @@ from surakshak.utils.system_config import SystemConfig
 from django.conf import settings as django_settings
 from surakshak.utils.system_config import resolve_lockdown
 from surakshak.utils.logs import MyHandler
-
+from django.contrib import messages
+from surakshak.utils.camera_manager import CameraManager
+import cv2
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MyHandler())
@@ -325,3 +327,86 @@ def add_respondent(request):
 def incidents(request):
     all_incidents = Incident.objects.all().order_by('-created_at')
     return render(request, "incidents.html", {"incidents": all_incidents})
+
+
+@require_http_methods(["GET", "POST"])
+def camera_adjust(request):
+    cameras = Camera.objects.all()
+    context = {'cameras': cameras}
+    
+    if request.method == 'POST':
+        if 'capture_snapshot' in request.POST:
+            # Step 1 & 2: Capture Snapshot
+            camera_id = request.POST.get('camera_id')
+            if not camera_id:
+                messages.error(request, 'Please select a camera.')
+                return redirect('camera_adjust')
+            
+            try:
+                camera = Camera.objects.get(id=camera_id)
+            except Camera.DoesNotExist:
+                messages.error(request, 'Selected camera does not exist.')
+                return redirect('camera_adjust')
+            
+            
+            frame = CameraManager._cameras[camera.name].frame
+            print(frame)
+            
+            if frame is None:
+                messages.error(request, 'Failed to capture image from the camera. Is camera viewable in streams?')
+                return redirect('camera_adjust')
+            
+            # Encode frame to JPEG
+            ret, buffer = cv2.imencode('.jpg', frame)
+            if not ret:
+                messages.error(request, 'Failed to encode the captured image.')
+                return redirect('camera_adjust')
+            
+            image_data = buffer.tobytes()
+            image_name = f"camera_{camera.id}_snapshot.jpg"
+            image_path = os.path.join('snapshots', image_name)
+            
+            # Save the image to MEDIA_ROOT/snapshots/
+            full_path = os.path.join(django_settings.MEDIA_ROOT, 'snapshots')
+            os.makedirs(full_path, exist_ok=True)  # Ensure the directory exists
+            file_path = os.path.join(full_path, image_name)
+            with open(file_path, 'wb') as f:
+                f.write(image_data)
+            
+            # Pass the image URL to the template
+            context['selected_camera'] = camera
+            context['snapshot_url'] = os.path.join(django_settings.MEDIA_URL, 'snapshots', image_name)
+            return render(request, 'camera_adjust.html', context)
+        
+        elif 'save_coordinates' in request.POST:
+            # Step 3: Save Coordinates
+            camera_id = request.POST.get('camera_id')
+            x1 = request.POST.get('x1')
+            y1 = request.POST.get('y1')
+            x2 = request.POST.get('x2')
+            y2 = request.POST.get('y2')
+            
+            if not all([camera_id, x1, y1, x2, y2]):
+                messages.error(request, 'All coordinate fields are required.')
+                return redirect('camera_adjust')
+            
+            try:
+                camera = Camera.objects.get(id=camera_id)
+            except Camera.DoesNotExist:
+                messages.error(request, 'Selected camera does not exist.')
+                return redirect('camera_adjust')
+            
+            # Validate and save coordinates
+            try:
+                camera.x1 = float(x1)
+                camera.y1 = float(y1)
+                camera.x2 = float(x2)
+                camera.y2 = float(y2)
+                camera.save()
+                messages.success(request, 'Coordinates saved successfully.')
+            except ValueError:
+                messages.error(request, 'Invalid coordinate values.')
+            
+            return redirect('camera_adjust')
+    
+    return render(request, 'camera_adjust.html', context)
