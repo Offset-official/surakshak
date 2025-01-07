@@ -320,3 +320,8 @@ def add_respondent(request):
         respondent.save()
         
     return redirect('respondents_page')
+
+@require_GET
+def incidents(request):
+    all_incidents = Incident.objects.all().order_by('-created_at')
+    return render(request, "incidents.html", {"incidents": all_incidents})

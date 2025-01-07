@@ -138,8 +138,7 @@ class CameraInferenceEngine:
             self.thread.start()
             self.is_running = True
             # logger.info(f"Inference started for camera: {self.name}")
-        else:
-            # logger.warning(f"Inference already running for camera: {self.name}")
+         # logger.warning(f"Inference already running for camera: {self.name}")
 
     def stop(self):
         """Stop the inference thread if running."""
@@ -148,8 +147,7 @@ class CameraInferenceEngine:
             self.thread.join()  # Wait for the thread to finish
             self.is_running = False
             # logger.info(f"Inference stopped for camera: {self.name}")
-        else:
-            # logger.warning(f"Inference is not running for camera: {self.name}")
+       
 
     def toggle(self):
         """Toggle between starting and stopping the inference."""
