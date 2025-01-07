@@ -37,7 +37,7 @@ class SurakshakConfig(AppConfig):
             streams.append(stream)
 
         def initialize_cameras():
-            for stream in streams[:2]:
+            for stream in streams:
                 CameraManager.add_camera(stream["name"], stream["url"])
                 # each camera is running in a separate thread
             print("All camera fetchers started.")            
