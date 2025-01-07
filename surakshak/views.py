@@ -63,8 +63,10 @@ def logs_page(request):
     return render(request, "logs.html")
 
 
-def settings(request):
-    return render(request, "settings.html")
+def settings_page(request):
+    active_tab = request.GET.get('tab', 'respondents')  # Default to 'respondents'
+    return render(request, "settings.html", {"active_tab": active_tab})
+
 
 
 @csrf_exempt

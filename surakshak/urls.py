@@ -5,11 +5,12 @@ from .views import (
     video_feed,
     notify_page,
     logs_page,
-    settings,
+    settings_page,
     toggle_status,
     notify_api,
     respondents_page,
-    add_respondent
+    add_respondent,
+    settings_page
 )
 
 urlpatterns = [
@@ -17,7 +18,7 @@ urlpatterns = [
     path("streams/", stream_page, name="stream_page"),
     path("notify/", notify_page, name="notify_page"),
     path("logs/", logs_page, name="logs_page"),
-    path("settings/", settings, name="settings"),
+    path("settings/", settings_page, name="settings"),
     path("video_feed/<str:camera_name>/", video_feed, name="video_feed"),
     path("toggle-status/", toggle_status, name="toggle_status"),
     path("__reload__/", include("django_browser_reload.urls")),

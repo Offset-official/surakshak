@@ -3,4 +3,37 @@
 {% block content %}
 <div class="flex text-5xl font-bold mb-5">Settings</div>
 
+<div class="grid grid-cols-8 pt-3 sm:grid-cols-10">
+    <!-- Sidebar -->
+    <div class="col-span-2 hidden sm:block">
+        <ul>
+            <li
+                class="mt-5 cursor-pointer border-l-2 border-l-blue-700 px-2 py-2 font-semibold text-blue-700 transition hover:border-l-blue-700 hover:text-blue-700">
+                <a href="{% url 'respondents_page' %}">Respondents</a>
+            </li>
+            <li
+                class="mt-5 cursor-pointer border-l-2 border-transparent px-2 py-2 font-semibold transition hover:border-l-blue-700 hover:text-blue-700">
+                <a href="{% url 'respondents_page' %}">Camera</a>
+            </li>
+            <li
+                class="mt-5 cursor-pointer border-l-2 border-transparent px-2 py-2 font-semibold transition hover:border-l-blue-700 hover:text-blue-700">
+                <a href="{% url 'respondents_page' %}">Schedule</a>
+            </li>
+            <li
+                class="mt-5 cursor-pointer border-l-2 border-transparent px-2 py-2 font-semibold transition hover:border-l-blue-700 hover:text-blue-700">
+                <a href="{% url 'respondents_page' %}">Incidents Mapping</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-span-6 sm:col-span-8">
+        <div>
+            {% block settings_content %}
+
+            {% endblock settings_content %}
+        </div>
+    </div>
+
+</div>
 {% endblock content %}
