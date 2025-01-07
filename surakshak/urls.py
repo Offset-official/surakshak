@@ -18,7 +18,8 @@ from .views import (
     respondents_page,
     add_respondent,
     incidents,
-    camera_adjust
+    camera_adjust,
+    single_stream_page
 )
 
 urlpatterns = [
@@ -37,6 +38,7 @@ urlpatterns = [
     path("settings/respondents/", respondents_page, name="respondents_page"),
     path("settings/add_respondent/", add_respondent, name="add_respondent"),
     path("incidents", incidents, name="incidents"),
-    path("camera_adjust", camera_adjust, name="camera_adjust")
+    path("camera_adjust", camera_adjust, name="camera_adjust"),
+    path('stream/<str:camera_name>/', single_stream_page, name='single_stream_page'),
     
 ] + static(django_settings.MEDIA_URL, document_root=django_settings.MEDIA_ROOT)
