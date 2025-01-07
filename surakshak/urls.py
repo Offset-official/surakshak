@@ -16,7 +16,8 @@ from .views import (
     heartbeat,
     resolve,
     respondents_page,
-    add_respondent
+    add_respondent,
+    incidents
 )
 
 urlpatterns = [
@@ -34,5 +35,6 @@ urlpatterns = [
     path("resolve/<str:incident_id>", resolve, name="resolve"),
     path("settings/respondents/", respondents_page, name="respondents_page"),
     path("settings/add_respondent/", add_respondent, name="add_respondent"),
+    path("incidents", incidents, name="incidents")
     
 ] + static(django_settings.MEDIA_URL, document_root=django_settings.MEDIA_ROOT)
