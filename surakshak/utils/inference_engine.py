@@ -10,9 +10,11 @@ import time
 import surakshak.utils.system_config as system_config
 import surakshak.utils.coordinator_thread as coordinator_thread
 from django.core.files.base import ContentFile
+from surakshak.utils.logs import MyHandler
 import io
 
 logger = logging.getLogger("inference")
+logger.addHandler(MyHandler())
 lockdown_lock = threading.Lock()
 
 
@@ -135,9 +137,9 @@ class CameraInferenceEngine:
             self.thread = threading.Thread(target=self.infer_frames, daemon=True, name="Camera IE " + self.camera.name)
             self.thread.start()
             self.is_running = True
-            logger.info(f"Inference started for camera: {self.name}")
+            # logger.info(f"Inference started for camera: {self.name}")
         else:
-            logger.warning(f"Inference already running for camera: {self.name}")
+            # logger.warning(f"Inference already running for camera: {self.name}")
 
     def stop(self):
         """Stop the inference thread if running."""
@@ -145,9 +147,9 @@ class CameraInferenceEngine:
             self.stop_event.set()  # Signal the thread to stop
             self.thread.join()  # Wait for the thread to finish
             self.is_running = False
-            logger.info(f"Inference stopped for camera: {self.name}")
+            # logger.info(f"Inference stopped for camera: {self.name}")
         else:
-            logger.warning(f"Inference is not running for camera: {self.name}")
+            # logger.warning(f"Inference is not running for camera: {self.name}")
 
     def toggle(self):
         """Toggle between starting and stopping the inference."""
@@ -179,7 +181,7 @@ class InferenceEngine:
     @classmethod
     def stop(cls):
         """Stop all camera inference engines if they are running."""
-        logger.info("Stopping all inference engines...")
+        # logger.info("Stopping all inference engines...")
         for engine in cls.camera_inference_engines:
             engine.stop()
         logger.info("All inference engines stopped.")
@@ -192,7 +194,7 @@ class InferenceEngine:
             engine = next((e for e in cls.camera_inference_engines if e.name == camera_name), None)
             if engine:
                 engine.toggle()
-                logger.info(f"Toggled inference for camera: {camera_name}")
+                # logger.info(f"Toggled inference for camera: {camera_name}")
             else:
                 logger.warning(f"Camera {camera_name} not found.")
         else:

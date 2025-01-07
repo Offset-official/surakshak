@@ -5,8 +5,10 @@ import onnxruntime as ort
 import time 
 from django.conf import settings
 import logging 
+from surakshak.utils.logs import MyHandler
 
 logger = logging.getLogger("inference")
+logger.addHandler(MyHandler())
 
 MODEL_PATH = settings.BASE_DIR / "surakshak/utils/models/yolov8n.onnx"
 

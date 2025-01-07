@@ -21,9 +21,11 @@ from django import forms
 from surakshak.utils.system_config import SystemConfig
 from django.conf import settings as django_settings
 from surakshak.utils.system_config import resolve_lockdown
+from surakshak.utils.logs import MyHandler
 
 
 logger = logging.getLogger(__name__)
+logger.addHandler(MyHandler())
 
 def homepage(request):
     return render(request, "homepage.html")
@@ -38,11 +40,11 @@ def heartbeat(request):
     try:
         status = SystemConfig.instrusion_state
         ld = SystemConfig.lockdown
-        logger.debug(f"Heartbeat check: {status}, Lockdown: {ld}")
+        # logger.debug(f"Heartbeat check: {status}, Lockdown: {ld}")
         incident_id = SystemConfig.incident_id
         return JsonResponse({'success': True, 'status': status, "lockdown" : ld, "incident_id": incident_id})
     except Exception as e:
-        logger.error(f"Heartbeat error: {e}")
+        # logger.error(f"Heartbeat error: {e}")
         return JsonResponse({'success': False, 'error': 'Failed to retrieve system status'}, status=500)
 
 
@@ -104,14 +106,14 @@ def toggle_status(request):
     """
     try:
         SystemConfig.toggle()
-        logger.info(f"System status toggled to: {SystemConfig.instrusion_state}")
+        # logger.info(f"System status toggled to: {SystemConfig.instrusion_state}")
 
         return JsonResponse({'success': True, 'status': SystemConfig.instrusion_state})
     except json.JSONDecodeError:
-        logger.error("Invalid JSON in toggle_status request")
+        # logger.error("Invalid JSON in toggle_status request")
         return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
     except Exception as e:
-        logger.error(f"Toggle status error: {e}")
+        # logger.error(f"Toggle status error: {e}")
         return JsonResponse({'success': False, 'error': 'Failed to toggle system status'}, status=500)
 
 def notify_api(
@@ -295,7 +297,7 @@ def resolve(request, incident_id):
         "incident_id": incident_instance.id,
         "respondent_names": respondent_names,
     }
-    logger.info("Incident image URL: %s", context["image_url"])
+    # logger.info("Incident image URL: %s", context["image_url"])
     return render(request, "resolve.html", context)
 
 ## Settings -> Respondents Page
