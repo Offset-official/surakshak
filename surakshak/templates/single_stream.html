@@ -1,0 +1,13 @@
+{% extends "layout1.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">CCTV Feed: {{ camera_name }}</h1>
+    <div class="flex justify-center">
+        <img src="{% url 'video_feed' camera_name=camera_name %}" alt="CCTV {{ camera_name }} Feed" class="w-full max-w-3xl h-auto border rounded">
+    </div>
+    <div class="mt-4 text-center">
+        <a href="{% url 'stream_page' %}" class="text-blue-500 hover:underline">← Back to Streams</a>
+    </div>
+</div>
+{% endblock content %}

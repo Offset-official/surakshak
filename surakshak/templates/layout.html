@@ -1,4 +1,5 @@
-{% load static %} {% load static tailwind_tags %}
+{% load static %}
+{% load static tailwind_tags %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -6,7 +7,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    {% tailwind_preload_css %} {% tailwind_css %}
+    {% tailwind_preload_css %}
+    {% tailwind_css %}
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap"
       rel="stylesheet"
@@ -14,83 +16,314 @@
     {% block styling %}{% endblock %}
   </head>
 
-  <body class="bg-primaryBg text-textColor font-sans p-10">
-    <!-- <div class=""> -->
-      <div class="flex justify-between w-full items-center">
-        <a class="flex gap-4" href="/">
-          <div class="h-full">
-            <img src="{% static '/logo.svg' %}" alt="logo" class="w-20 h-20" />
-          </div>
-          <div class="flex flex-col justify-center">
-            <div class="text-5xl font-bold">Surakshak</div>
-            <div class="text-lg ">A Smart Security System for Institutions</div>
-          </div>
-        </a>
-        <div class=""> 
-          <label class="inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              class="sr-only peer"
-              onchange="toggleState(this.checked)"
-            />
-            <span
-              class="mr-3 font-normal text-gray-900 dark:text-gray-300"
-              id="toggle-label"
-            >
-              Inactive
-            </span>
-            <div class="relative w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primaryHighlight dark:peer-focus:ring-primaryHighlight rounded-full peer dark:bg-accent peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-green-500"></div>
-          </label>
+  <body class="bg-primaryBg text-textColor font-sans p-10 relative">
+    <!-- Header Section -->
+    <div class="flex justify-between w-full items-center mb-10">
+      <!-- Logo Section -->
+      <a class="flex gap-4" href="/">
+        <div class="h-full">
+          <img src="{% static 'logo.svg' %}" alt="logo" class="w-20 h-20" />
         </div>
+        <div class="flex flex-col justify-center">
+          <div class="text-5xl font-bold">Surakshak</div>
+          <div class="text-lg">A Smart Security System for Institutions</div>
+        </div>
+      </a>
+
+      <!-- Menu / Navigation -->
+      <nav class="flex border-2 rounded-lg border-primaryHighlight">
+        <a
+          href="/streams"
+          class="py-4 px-20 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
+          >Streams</a
+        >
+        <a
+          href="/notify"
+          class="py-4 px-20 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
+          >Notify</a
+        >
+        <a
+          href="/logs"
+          class="py-4 px-20 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
+          >Logs</a
+        >
+        <a
+          href="/settings"
+          class="py-4 px-20 text-sm font-normal transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
+          >Settings</a
+        >
+      </nav>
+
+      <!-- Toggle & Heartbeat Section -->
+      <div class="flex items-center gap-4 ml-4 w-44 justify-center py-2">
+        <!-- Heartbeat / Caution Icons -->
+        <div class="relative group" style="width: 24px; height: 24px;">
+          <!-- Heartbeat Icon -->
+          <svg
+            id="heartbeat-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6 text-gray-400 transition-colors duration-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 
+                 C2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 
+                 4.5 2.09C13.09 3.81 14.76 3 
+                 16.5 3 19.58 3 22 5.42 22 8.5
+                 c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            />
+          </svg>
+
+          <!-- Caution Icon (Hidden by default) -->
+          <svg
+            id="caution-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6 text-yellow-400 transition-colors duration-300 hidden"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01M21 12a9 9 0
+                 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+
+          <!-- Tooltip -->
+          <span
+            id="heartbeat-tooltip"
+            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden px-2 py-1 bg-gray-700 text-white text-xs rounded group-hover:block"
+          >
+            Checking...
+          </span>
+        </div>
+
+        <!-- Toggle Button -->
+        <label class="inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            class="sr-only peer"
+            onchange="toggleSystemState()"
+            id="status-toggle"
+          />
+          <span
+            class="mr-3 text-sm font-normal"
+            id="toggle-label"
+          >
+            Inactive
+          </span>
+          <div
+            class="relative w-12 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-3 peer-focus:ring-primaryHighlight
+                   rounded-full peer dark:bg-accent peer-checked:after:translate-x-full
+                   rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white
+                   after:content-[''] after:absolute after:top-0.5 after:start-[3px]
+                   after:bg-white after:border-gray-300 after:border
+                   after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600
+                   peer-checked:bg-green-500"
+          ></div>
+        </label>
       </div>
-    {% block content %} {% endblock content %} {% block script %} {% endblock %}
-    <!-- </div> -->
-	<div class="text-textColor opacity-15 absolute bottom-3 right-1/2 transform translate-x-1/2 font-thin">Surakshak &copy; 2025 All Rights Reserved.</div>
- 
-</body>
-<script>
-  document.addEventListener("DOMContentLoaded", async () => {
-    try {
-      const response = await fetch("{% url 'toggle_status' %}", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await response.json();
-      if (data.success) {
-        const toggleState = data.state;
-        const toggleInput = document.querySelector("input[type='checkbox']");
+    </div>
+
+    <!-- Intrusion Popup (Initially Hidden) -->
+    <div
+      id="intrusion-popup"
+      class="hidden fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-red-700 text-white p-6 rounded shadow-md w-80 text-center"
+    >
+      <p class="mb-4 text-lg font-bold">
+        Intrusion has been detected. Click here to resolve.
+      </p>
+      <button
+        id="resolve-button"
+        class="bg-white text-red-700 px-4 py-2 rounded font-semibold hover:bg-gray-100 transition"
+      >
+        Resolve
+      </button>
+    </div>
+
+    <!-- Main Content -->
+    <main>
+      {% block content %}
+      {% endblock content %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-textColor opacity-15 mt-10">
+      Surakshak &copy; 2025 All Rights Reserved.
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+      let isToggling = false; // Prevent multiple toggle requests
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // References
+        const heartbeatIcon = document.getElementById("heartbeat-icon");
+        const cautionIcon = document.getElementById("caution-icon");
+        const heartbeatTooltip = document.getElementById("heartbeat-tooltip");
+        const toggleInput = document.getElementById("status-toggle");
         const toggleLabel = document.getElementById("toggle-label");
-        toggleInput.checked = toggleState;
-        toggleLabel.innerText = toggleState ? "Active" : "Inactive";
-      }
-    } catch (error) {
-      console.error("Error fetching toggle state:", error);
-    }
-  });
-  
-  async function toggleState(state) {
-    try {
-      const response = await fetch("{% url 'toggle_status' %}", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": "{{ csrf_token }}",
-        },
-        body: JSON.stringify({ state: state }),
+        const intrusionPopup = document.getElementById("intrusion-popup");
+        const resolveButton = document.getElementById("resolve-button");
+
+        // Show/Hide Tooltip
+        function showTooltip() {
+          heartbeatTooltip.classList.remove("hidden");
+        }
+        function hideTooltip() {
+          heartbeatTooltip.classList.add("hidden");
+        }
+
+        // Heartbeat and Lockdown Indicators
+        function updateIndicators(isAlive, lockdown, status) {
+          if (lockdown) {
+            // Hide heartbeat, show caution
+            heartbeatIcon.classList.add("hidden");
+            cautionIcon.classList.remove("hidden");
+            heartbeatTooltip.innerText = "System is in lockdown";
+            heartbeatTooltip.classList.remove("hidden");
+
+            // Toggle switch is disabled
+            toggleInput.checked = false;
+            toggleLabel.innerText = "Inactive";
+            toggleInput.disabled = true;
+          } else {
+            // Normal operation
+            heartbeatIcon.classList.remove("hidden");
+            cautionIcon.classList.add("hidden");
+            heartbeatTooltip.classList.remove("hidden");
+
+            if (isAlive) {
+              heartbeatIcon.classList.remove("text-gray-400");
+              heartbeatIcon.classList.add("text-red-500");
+              heartbeatTooltip.innerText = "System is functional";
+
+              // Update toggle based on status
+              toggleInput.checked = status === "ACTIVE";
+              toggleLabel.innerText =
+                status === "ACTIVE" ? "Active" : "Inactive";
+              toggleInput.disabled = false;
+            } else {
+              heartbeatIcon.classList.remove("text-red-500");
+              heartbeatIcon.classList.add("text-gray-400");
+              heartbeatTooltip.innerText = "System is down";
+
+              // Disable toggle
+              toggleInput.checked = false;
+              toggleLabel.innerText = "Inactive";
+              toggleInput.disabled = true;
+            }
+          }
+        }
+
+        // Intrusion Popup Handling
+        function showIntrusionPopup(incidentId) {
+          // Show the red popup
+          intrusionPopup.classList.remove("hidden");
+          // Update the Resolve button to point to /resolve/<incidentId>
+          resolveButton.onclick = () => {
+            window.location.href = `/resolve/${incidentId}`;
+          };
+        }
+        function hideIntrusionPopup() {
+          intrusionPopup.classList.add("hidden");
+        }
+
+        // Fetch heartbeat
+        async function fetchHeartbeat() {
+          try {
+            const response = await fetch("{% url 'heartbeat' %}");
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            const data = await response.json();
+            if (data.success) {
+              const status = data.status; // 'ACTIVE' or 'INACTIVE'
+              const lockdown = data.lockdown; // true/false
+              const incidentId = data.incident_id;
+
+              // System is alive
+              updateIndicators(true, lockdown, status);
+
+              // Handle intrusion popup
+              if (lockdown && incidentId) {
+                showIntrusionPopup(incidentId);
+              } else {
+                hideIntrusionPopup();
+              }
+            } else {
+              // System responded with success: false
+              updateIndicators(false, false, null);
+              hideIntrusionPopup();
+            }
+          } catch (error) {
+            console.error("Heartbeat fetch error:", error);
+            // System down
+            updateIndicators(false, false, null);
+            hideIntrusionPopup();
+          }
+        }
+
+        // Initial heartbeat
+        fetchHeartbeat();
+        // Repeat every second
+        setInterval(fetchHeartbeat, 1000);
+
+        // Tooltip events
+        const heartbeatContainer = heartbeatIcon.parentElement;
+        heartbeatContainer.addEventListener("mouseenter", showTooltip);
+        heartbeatContainer.addEventListener("mouseleave", hideTooltip);
       });
-      const data = await response.json();
-      if (data.success) {
-        document.getElementById("toggle-label").innerText = state
-          ? "Active"
-          : "Inactive";
-      } else {
-        console.error(data.error);
+
+      // Toggle function
+      async function toggleSystemState() {
+        if (isToggling) return;
+        isToggling = true;
+
+        const toggleInput = document.getElementById("status-toggle");
+        toggleInput.disabled = true;
+
+        try {
+          const response = await fetch("{% url 'toggle_status' %}", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify({}), // No need for state, server toggles internally
+          });
+
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          const data = await response.json();
+          if (data.success) {
+            // Refresh page on success
+            location.reload();
+          } else {
+            console.error("Toggle failed:", data.error);
+            alert("Failed to toggle system status. Please try again.");
+            toggleInput.checked = !toggleInput.checked; // revert
+          }
+        } catch (error) {
+          console.error("Error toggling system state:", error);
+          alert("An error occurred while toggling the system status.");
+          toggleInput.checked = !toggleInput.checked; // revert
+        } finally {
+          toggleInput.disabled = false;
+          isToggling = false;
+        }
       }
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  }
-</script>
+    </script>
+
+    {% block script %}{% endblock %}
+  </body>
 </html>
