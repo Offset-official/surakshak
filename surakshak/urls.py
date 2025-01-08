@@ -22,7 +22,8 @@ from .views import (
     camera_adjust,
     single_stream_page,
     camera_page,
-    incidents_mapping_page
+    incidents_mapping_page,
+    assign_respondent
 )
 
 urlpatterns = [
@@ -44,6 +45,7 @@ urlpatterns = [
     path("camera_adjust", camera_adjust, name="camera_adjust"),
     path('stream/<str:camera_name>/', single_stream_page, name='single_stream_page'),
     path('settings/camera_page', camera_page, name='camera_page'),
-    path('settings/incidents_mapping', incidents_mapping_page, name='incidents_mapping_page')
+    path('settings/incidents_mapping', incidents_mapping_page, name='incidents_mapping_page'),
+    path('settings/assign_respondent/', assign_respondent, name='assign_respondent')
     
 ] + static(django_settings.MEDIA_URL, document_root=django_settings.MEDIA_ROOT)

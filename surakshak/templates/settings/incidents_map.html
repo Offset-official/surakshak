@@ -2,8 +2,94 @@
 
 {% block settings_content %}
 
-<section class="bg-white dark:bg-gray-900">
-    <div class="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
+{% if pop_up %}
+<!-- Add a respondent view -->
+<div class="flex justify-center items-center h-screen w-screen bg-black bg-opacity-50 fixed top-0 left-0 z-50">
+    <div class="bg-primaryHighlight p-6 w-[500px] relative">
+        <div class="flex text-4xl font-bold text-white mb-5 justify-left">Assign Respondent</div>
+        <form name="assign_new_respondent" method="post" action="{% url 'assign_respondent' %}">
+            {% csrf_token %}
+            <input type="hidden" name="incident_type" value="{{ incident_type }}">
+            <button id="multiLevelDropdownButton"
+                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                type="button">
+                Add Members
+                <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 10 6">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m1 1 4 4 4-4" />
+                </svg>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div id="dropdownDefaultCheckbox"
+                class="z-10 hidden w-48 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600">
+                <ul class="p-3 space-y-3 text-sm text-gray-700 dark:text-gray-200"
+                    aria-labelledby="multiLevelDropdownButton">
+
+                    {% if incident_type == 'Tresspassing' %}
+                    {% for respondent in available_tress_respondents %}
+                    <li>
+                        <div class="flex items-center">
+                            <input id="{{ respondent.id }}" type="checkbox" name="selected_respondents"
+                                value="{{ respondent.name }}"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                            <label for="{{ respondent.id }}" class="ms-2 text-sm font-medium text-gray-900">
+                                {{ respondent.name }}
+                            </label>
+                        </div>
+                    </li>
+                    {% endfor %}
+                    {% elif incident_type == 'Fire' %}
+                    {% for respondent in available_fire_respondents %}
+                    <li>
+                        <div class="flex items
+                            -center">
+                            <input id="{{ respondent.id }}" type="checkbox" name="selected_respondents"
+                                value="{{ respondent.name }}"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                            <label for="{{ respondent.id }}" class="ms-2 text-sm font-medium text-gray-900">
+                                {{ respondent.name }}
+                            </label>
+                        </div>
+                    </li>
+                    {% endfor %}
+                    {% elif incident_type == 'Hazard' %}
+                    {% for respondent in available_hazard_respondents %}
+                    <li>
+                        <div class="flex items
+                            -center">
+                            <input id="{{ respondent.id }}" type="checkbox" name="selected_respondents"
+                                value="{{ respondent.name }}"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                            <label for="{{ respondent.id }}" class="ms-2 text-sm font-medium text-gray-900">
+                                {{ respondent.name }}
+                            </label>
+                        </div>
+                    </li>
+                    {% endfor %}
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="flex flex-col gap-2 sm:flex-row sm:justify-center">
+                <div class="mt-10">
+                    <a href="?pop_up=false"><button
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                            type="button">Close</button></a>
+                </div>
+                <div class="mt-10">
+                    <button
+                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                        data-heading="Tresspassing">Submit</button></a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<section class="">
+    <div class="py-2 px-1 mx-auto max-w-screen-xl lg:py-4 lg:px-6">
         <div class="mx-auto max-w-screen-md text-center mb-8 lg:mb-12">
             <h2 class="text-3xl font-bold leading-tight text-gray-900 dark:text-white lg:text-4xl">Incidents Mapping
             </h2>
@@ -11,21 +97,13 @@
         <div class="space-y-8 lg:grid lg:grid-cols-3 sm:gap-6 xl:gap-10 lg:space-y-0">
             <!-- Card - 1 -->
             <div
-                class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-600 xl:p-8 dark:bg-gray-800 dark:text-white">
+                class="flex flex-col p-6 mx-auto text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-600 xl:p-8 dark:bg-gray-800 dark:text-white">
                 <h3 class="mb-4 text-2xl font-semibold">Tresspassing</h3>
 
                 <!-- Table -->
-                <div class="p-1.5 min-w-full inline-block justify-center h-[50vh]">
+                <div class="p-1.5 min-w-full inline-block justify-center h-[35vh]">
                     <div class="overflow-hidden shadow-md rounded-lg">
                         <div class="table border-collapse table-auto w-full divide-y divide-gray-100">
-                            <div class="table-header-group">
-                                <div class="table-row bg:gray-50 dark:bg-gray-700">
-                                    <div
-                                        class="table-cell px-6 py-3 text-center text-xl font-bold text-white-500 uppercase">
-                                        Name
-                                    </div>
-                                </div>
-                            </div>
                             <div
                                 class="table-row-group divide-y divide-gray-100 border-b dark:bg-gray-800 dark:border-gray-700">
                                 {% for incident_mapping in incident_mappings %}
@@ -45,157 +123,102 @@
                     </div>
                 </div>
 
-                <!-- Dropdown Button -->
-                <button id="multiLevelDropdownButton"
-                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                    type="button">
-                    Add Members
-                    <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 10 6">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="m1 1 4 4 4-4" />
-                    </svg>
-                </button>
+                <div class="flex flex-col sm:flex-row sm:justify-centre">
+                    {% if not pop_up %}
+                    <a class="" href="?pop_up=true&incident_type=Tresspassing">
+                        <div class="w-min mx-auto bg-primaryHighlight shadow-md rounded-lg p-3 space-y-1">
+                            <button class="py-2 px-4 bg-primaryBg text-white rounded hover:bg-accent">Add</button>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
 
-                <!-- Dropdown Menu -->
-                <div id="dropdownDefaultCheckbox"
-                    class="z-10 hidden w-48 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600">
-                    <ul class="p-3 space-y-3 text-sm text-gray-700 dark:text-gray-200"
-                        aria-labelledby="multiLevelDropdownButton">
-                        {% for respondent in available_tress_respondents %}
-                            <li>
-                                <div class="flex items-center">
-                                    <input id="{{ respondent.id}}" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
-                                    <label for="{{ respondent.id}}" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{{ respondent.name }}
-                                    </label>
+        <!-- Card - 2 -->
+        <div
+            class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-600 xl:p-8 dark:bg-gray-800 dark:text-white">
+            <h3 class="mb-4 text-2xl font-semibold">Fire</h3>
+
+            <!-- Table -->
+            <div class="p-1.5 min-w-full inline-block justify-center h-[35vh]">
+                <div class="overflow-hidden shadow-md rounded-lg">
+                    <div class="table border-collapse table-auto w-full divide-y divide-gray-100">
+                        <div
+                            class="table-row-group divide-y divide-gray-100 border-b dark:bg-gray-800 dark:border-gray-700">
+                            {% for incident_mapping in incident_mappings %}
+                            {% if incident_mapping.type_name == 'Fire' %}
+                            {% for member in incident_mapping.respondents %}
+                            <div class="table-row">
+                                <div
+                                    class="table-cell px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-100">
+                                    {{ member.name }}
                                 </div>
-                            </li>
+                            </div>
+                            {% endfor %}
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:justify-centre">
+                {% if not pop_up %}
+                <a class="" href="?pop_up=true?">
+                    <div class="w-min mx-auto bg-primaryHighlight shadow-md rounded-lg p-3 space-y-1">
+                        <button class="py-2 px-4 bg-primaryBg text-white rounded hover:bg-accent">Add</button>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Card - 3 -->
+    <div
+        class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-600 xl:p-3 dark:bg-gray-800 dark:text-white">
+        <h3 class="mb-4 text-2xl font-semibold">Hazard</h3>
+
+        <!-- Table -->
+        <div class="p-1.5 min-w-full inline-block justify-center h-[35vh]">
+            <div class="overflow-hidden shadow-md rounded-lg">
+                <div class="table border-collapse table-auto w-full divide-y divide-gray-100">
+                    <div
+                        class="table-row-group divide-y divide-gray-100 border-b dark:bg-gray-800 dark:border-gray-700">
+                        {% for incident_mapping in incident_mappings %}
+                        {% if incident_mapping.type_name == 'Hazard' %}
+                        {% for member in incident_mapping.respondents %}
+                        <div class="table-row">
+                            <div
+                                class="table-cell px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-100">
+                                {{ member.name }}
+                            </div>
+                        </div>
                         {% endfor %}
-
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Card - 2 -->
-            <div
-                class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-600 xl:p-8 dark:bg-gray-800 dark:text-white">
-                <h3 class="mb-4 text-2xl font-semibold">Fire</h3>
-
-                <!-- Table -->
-                <div class="p-1.5 min-w-full inline-block justify-center h-[50vh]">
-                    <div class="overflow-hidden shadow-md rounded-lg">
-                        <div class="table border-collapse table-auto w-full divide-y divide-gray-100">
-                            <div class="table-header-group">
-                                <div class="table-row bg:gray-50 dark:bg-gray-700">
-                                    <div
-                                        class="table-cell px-6 py-3 text-center text-xl font-bold text-white-500 uppercase">
-                                        Name
-                                    </div>
-                                </div>
-                            </div>
-                            <div
-                                class="table-row-group divide-y divide-gray-100 border-b dark:bg-gray-800 dark:border-gray-700">
-                                {% for incident_mapping in incident_mappings %}
-                                {% if incident_mapping.type_name == 'Fire' %}
-                                {% for member in incident_mapping.respondents %}
-                                <div class="table-row">
-                                    <div
-                                        class="table-cell px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-100">
-                                        {{ member.name }}
-                                    </div>
-                                </div>
-                                {% endfor %}
-                                {% endif %}
-                                {% endfor %}
-                            </div>
-                        </div>
+                        {% endif %}
+                        {% endfor %}
                     </div>
-                </div>
-
-                <!-- Dropdown -->
-                <button id="multiLevelDropdownButton" data-dropdown-toggle="multi-dropdown"
-                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                    type="button">Add Members<svg class="w-2.5 h-2.5 ms-3" aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="m1 1 4 4 4-4" />
-                    </svg>
-                </button>
-
-                <!-- Dropdown menu -->
-                <div id="dropdownDefaultCheckbox"
-                    class="z-10 hidden w-48 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600">
-                    <ul class="p-3 space-y-3 text-sm text-gray-700 dark:text-gray-200"
-                        aria-labelledby="dropdownCheckboxButton">
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Card - 3 -->
-            <div
-                class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-600 xl:p-8 dark:bg-gray-800 dark:text-white">
-                <h3 class="mb-4 text-2xl font-semibold">Hazard</h3>
-
-                <!-- Table -->
-                <div class="p-1.5 min-w-full inline-block justify-center h-[50vh]">
-                    <div class="overflow-hidden shadow-md rounded-lg">
-                        <div class="table border-collapse table-auto w-full divide-y divide-gray-100">
-                            <div class="table-header-group">
-                                <div class="table-row bg:gray-50 dark:bg-gray-700">
-                                    <div
-                                        class="table-cell px-6 py-3 text-center text-xl font-bold text-white-500 uppercase">
-                                        Name
-                                    </div>
-                                </div>
-                            </div>
-                            <div
-                                class="table-row-group divide-y divide-gray-100 border-b dark:bg-gray-800 dark:border-gray-700">
-                                {% for incident_mapping in incident_mappings %}
-                                {% if incident_mapping.type_name == 'Hazard' %}
-                                {% for member in incident_mapping.respondents %}
-                                <div class="table-row">
-                                    <div
-                                        class="table-cell px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-100">
-                                        {{ member.name }}
-                                    </div>
-                                </div>
-                                {% endfor %}
-                                {% endif %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Dropdown -->
-                <button id="multiLevelDropdownButton" data-dropdown-toggle="multi-dropdown"
-                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                    type="button">Add Members<svg class="w-2.5 h-2.5 ms-3" aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="m1 1 4 4 4-4" />
-                    </svg>
-                </button>
-
-                <!-- Dropdown menu -->
-                <div id="dropdownDefaultCheckbox"
-                    class="z-10 hidden w-48 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600">
-                    <ul class="p-3 space-y-3 text-sm text-gray-700 dark:text-gray-200"
-                        aria-labelledby="dropdownCheckboxButton">
-                    </ul>
                 </div>
             </div>
         </div>
+        <div class="flex flex-col sm:flex-row sm:justify-centre">
+            {% if not pop_up %}
+            <a class="" href="?pop_up=true?">
+                <div class="w-min mx-auto bg-primaryHighlight shadow-md rounded-lg p-3 space-y-1">
+                    <button class="py-2 px-4 bg-primaryBg text-white rounded hover:bg-accent">Add</button>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    </div>
+    </div>
     </div>
 </section>
-
 <script>
     // Get the button and dropdown elements
     const dropdownButton = document.getElementById('multiLevelDropdownButton');
     const dropdownMenu = document.getElementById('dropdownDefaultCheckbox');
-    
+
     // Add a click event listener to toggle the dropdown
-    dropdownButton.addEventListener('click', function() {
+    dropdownButton.addEventListener('click', function () {
         // Toggle the 'hidden' class to show or hide the dropdown
         dropdownMenu.classList.toggle('hidden');
     });

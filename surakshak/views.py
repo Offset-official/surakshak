@@ -42,7 +42,7 @@ def heartbeat(request):
     try:
         status = SystemConfig.instrusion_state
         ld = SystemConfig.lockdown
-        # logger.debug(f"Heartbeat check: {status}, Lockdown: {ld}")
+        logger.debug(f"Heartbeat check: {status}, Lockdown: {ld}")
         incident_id = SystemConfig.incident_id
         return JsonResponse({'success': True, 'status': status, "lockdown" : ld, "incident_id": incident_id})
     except Exception as e:
@@ -260,6 +260,8 @@ def add_respondent(request):
 
 ## Settings -> Incidents Mapping Page
 def incidents_mapping_page(request):
+    pop_up = request.GET.get("pop_up", "false").lower() == "true"
+    incident_type = request.GET.get("incident_type", "")
     incident_types = IncidentType.objects.all()
     serialized_incidents = IncidentTypeSerializer(incident_types, many=True).data
 
@@ -279,7 +281,35 @@ def incidents_mapping_page(request):
         "incident_mappings": serialized_incidents,
         "available_tress_respondents": tress_avail_serialized,
         "available_fire_respondents": fire_avail_serialized,
+        "pop_up": pop_up,
+        "incident_type": incident_type
     })
+
+def assign_respondent(request):
+    if request.method == "POST":
+        type_name = request.POST.get("incident_type")
+        selected_respondents = request.POST.getlist("selected_respondents")  # Retrieve selected IDs
+
+        for respondent in selected_respondents:
+            name = respondent
+            # Validate that the respondent exists
+            try:
+                respondent = Respondent.objects.get(name=name)
+            except Respondent.DoesNotExist:
+                return JsonResponse({"success": False, "error": "Respondent does not exist"}, status=400)
+
+            # Check if the incident type exists
+            incident_type, created = IncidentType.objects.get_or_create(type_name=type_name)
+
+            # Check if the respondent is already assigned
+            if incident_type.respondents.filter(id=respondent.id).exists():
+                return JsonResponse({"success": False, "error": "Respondent already assigned"}, status=400)
+
+            # Add the respondent to the incident type
+            incident_type.respondents.add(respondent)
+
+    return redirect('incidents_mapping_page')
+
 
 @require_http_methods(["GET", "POST"])
 def resolve(request, incident_id):
