@@ -234,6 +234,12 @@ def timings_page(request):
 
     return render(request, "timings.html")
 
+def camera_page(request):
+    return render(request, "settings/camera_mod.html")
+
+def incidents_mapping_page(request):
+    return render(request, "settings/incidents_map.html")
+
 @require_http_methods(["GET", "POST"])
 def resolve(request, incident_id):
     """
