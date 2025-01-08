@@ -1,0 +1,192 @@
+{% extends "layout1.html" %}
+
+{% block content %}
+<!-- Button-Like Nav (placed above the table) -->
+<div class="flex justify-end mb-2">
+  <nav class="flex border-2 rounded-lg border-primaryHighlight">
+    <!-- Logs Link -->
+    <a
+      href="{% url 'logs_page' %}"
+      class="py-2 px-6 text-sm font-normal border-r-2 border-primaryHighlight
+             transition-all duration-200 select-none cursor-pointer 
+             hover:text-accent hover:bg-primaryHighlight"
+    >
+      Logs
+    </a>
+    <!-- Incidents Link (selected) -->
+    <a
+      href="{% url 'incidents' %}"
+      class="py-2 px-6 text-sm font-normal
+             transition-all duration-200 select-none cursor-pointer 
+             hover:text-accent hover:bg-primaryHighlight
+             bg-primaryHighlight text-accent"
+    >
+      Incidents
+    </a>
+  </nav>
+</div>
+
+<div class="flex text-5xl font-bold mb-8">Incidents Page</div>
+
+<!-- Incidents Table -->
+<div class="overflow-x-auto">
+    <table id="incidentsTable" class="min-w-full divide-y divide-gray-700">
+        <thead class="bg-primaryHighlight">
+            <tr>
+                <th class="px-6 py-3 text-left text-md font-bold text-gray-300 uppercase tracking-wider w-10p">ID</th>
+                <th class="px-6 py-3 text-left text-md font-bold text-gray-300 uppercase tracking-wider w-15p">Created At</th>
+                <th class="px-6 py-3 text-left text-md font-bold text-gray-300 uppercase tracking-wider w-20p">Type</th>
+                <th class="px-6 py-3 text-left text-md font-bold text-gray-300 uppercase tracking-wider w-20p">Camera</th>
+                <th class="px-6 py-3 text-left text-md font-bold text-gray-300 uppercase tracking-wider w-10p">Resolved</th>
+                <th class="px-6 py-3 text-left text-md font-bold text-gray-300 uppercase tracking-wider w-15p">Resolver</th>
+                <th class="px-6 py-3 text-left text-md font-bold text-gray-300 uppercase tracking-wider w-10p">Photo</th> <!-- New Photo Column -->
+            </tr>
+        </thead>
+        <tbody class="bg-primaryHighlight divide-y divide-gray-700">
+            {% for incident in incidents %}
+            <tr class="{% if forloop.counter > 50 %}hidden{% endif %}">
+                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-100">{{ incident.id }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-100">{{ incident.created_at }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-100">{{ incident.incident_type }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-100">{{ incident.camera }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-100">
+                    {% if incident.resolved %}
+                        Yes
+                    {% else %}
+                        No
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-100">
+                    {% if incident.resolver %}
+                        {{ incident.resolver }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-100">
+                    {% if incident.image %}
+                        <button
+                            class="text-red-500 hover:underline focus:outline-none"
+                            onclick="openModal('{{ incident.image.url }}')"
+                        >
+                            Photo
+                        </button>
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                    No incidents available.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination Controls -->
+<div id="paginationControls" class="mt-4 flex justify-center items-center space-x-4">
+    <button id="prevPage" class="px-4 py-2 bg-gray-700 text-gray-200 rounded disabled:opacity-50" disabled>Prev</button>
+    <span id="pageInfo" class="text-lg">Page 1</span>
+    <button id="nextPage" class="px-4 py-2 bg-gray-700 text-gray-200 rounded">Next</button>
+</div>
+
+<!-- Modal Popup for Photo -->
+<div id="photoModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white rounded-lg overflow-auto shadow-lg relative max-w-3xl w-full p-4"> <!-- Increased max-w-lg to max-w-3xl and added padding -->
+        <!-- Close Button -->
+        <button
+            class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 focus:outline-none"
+            onclick="closeModal()"
+        >
+            <!-- Cross Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <!-- Image Display -->
+        <img id="modalImage" src="" alt="Incident Photo" class="w-full h-auto object-contain max-h-screen"> <!-- Added object-contain and max-h-screen -->
+    </div>
+</div>
+
+<!-- JavaScript for Pagination and Modal -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Pagination Logic
+        const rows = document.querySelectorAll('#incidentsTable tbody tr');
+        const rowsPerPage = 50;
+        let currentPage = 1;
+        const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+        const prevButton = document.getElementById('prevPage');
+        const nextButton = document.getElementById('nextPage');
+        const pageInfo = document.getElementById('pageInfo');
+
+        function showPage(page) {
+            // Validate page number
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+
+            // Hide all rows
+            rows.forEach((row) => {
+                row.classList.add('hidden');
+            });
+
+            // Calculate start/end
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+
+            // Show rows for the current page
+            for (let i = start; i < end && i < rows.length; i++) {
+                rows[i].classList.remove('hidden');
+            }
+
+            // Update page info
+            pageInfo.innerText = `Page ${page} of ${totalPages}`;
+            prevButton.disabled = page === 1;
+            nextButton.disabled = page === totalPages;
+
+            // Update current page
+            currentPage = page;
+        }
+
+        // Initialize
+        showPage(currentPage);
+
+        // Pagination events
+        prevButton.addEventListener('click', function () {
+            if (currentPage > 1) showPage(currentPage - 1);
+        });
+        nextButton.addEventListener('click', function () {
+            if (currentPage < totalPages) showPage(currentPage + 1);
+        });
+
+        // Modal Logic
+        window.openModal = function(imageUrl) {
+            const modal = document.getElementById('photoModal');
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = imageUrl;
+            modal.classList.remove('hidden');
+        };
+
+        window.closeModal = function() {
+            const modal = document.getElementById('photoModal');
+            const modalImage = document.getElementById('modalImage');
+            modal.classList.add('hidden');
+            modalImage.src = '';
+        };
+
+        // Close modal when clicking outside the modal content
+        const modal = document.getElementById('photoModal');
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+    });
+</script>
+
+{% endblock content %}

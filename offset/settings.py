@@ -27,8 +27,8 @@ EMAIL_USE_SSL = False
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-MEDIA_ROOT = BASE_DIR / "media/outputs"
-
+MEDIA_ROOT = os.path.join(BASE_DIR, 'surakshak/media')
+MEDIA_URL = "media/"
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -43,12 +43,19 @@ ALLOWED_HOSTS = []
 
 TAILWIND_APP_NAME = "surakshak"
 
-if platform == "win32":
-    NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
-else:
-    NPM_BIN_PATH = (
-        "/opt/homebrew/bin/npm"  # should work for linux and mac if not please change : )
-    )
+NPM_BIN_PATH = os.getenv("NPM_BIN_PATH")
+
+if not NPM_BIN_PATH:
+    possible_paths = [
+        "C:\Program Files\nodejs\npm.cmd",
+        "/home/jalan/.nvm/versions/node/v22.12.0/bin/npm",
+        "/opt/homebrew/bin/npm"
+    ]
+    NPM_BIN_PATH = next((path for path in possible_paths if os.path.exists(path)), None)
+
+    if not NPM_BIN_PATH:
+        raise FileNotFoundError("NPM binary not found. Please update the paths.")
+
 
 # Application definition
 
@@ -62,6 +69,7 @@ INSTALLED_APPS = [
     "tailwind",
     "surakshak",
     "django_browser_reload",
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -200,4 +208,4 @@ LOGGING = {
     },
 }
 
-INFERENCE_ENGINE = False
+INFERENCE_ENGINE = True

@@ -3,8 +3,10 @@ import threading
 import time
 import logging
 import os 
+from surakshak.utils.logs import MyHandler
 
 logger = logging.getLogger("camera")
+logger.addHandler(MyHandler())
 
 class VideoCamera:
     def __init__(self, rtsp_url, name):
@@ -17,18 +19,18 @@ class VideoCamera:
         self.thread = threading.Thread(target=self.update, daemon=True, name=name)
         self.thread.start()
 
-    def update(self):
+    def update(self): # updates as frames arrive
         while self._running:
             if not self.video.isOpened():
                 logger.info(f"Attempting to reconnect to {self.rtsp_url}")
                 self.video = cv2.VideoCapture(self.rtsp_url)
                 time.sleep(5)  # Wait before retrying
 
-            ret, image = self.video.read()
+            ret, image = self.video.read() # this will wait till next frame
             if ret:
                 with self.lock:
                     self.frame = image
-                time.sleep(0.1)
+                time.sleep(0.1) # limits to 10 FPS
             else:
                 logger.info(f"Failed to read frame from {self.rtsp_url}")
                 self.video.release()
