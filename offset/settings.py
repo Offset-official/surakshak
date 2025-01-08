@@ -43,14 +43,19 @@ ALLOWED_HOSTS = []
 
 TAILWIND_APP_NAME = "surakshak"
 
-if platform == "win32":
-    NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
-    
-else:
-    NPM_BIN_PATH = (
-        "/home/jalan/.nvm/versions/node/v22.12.0/bin/npm"
-          # should work for linux and mac if not please change : )
-    )
+NPM_BIN_PATH = os.getenv("NPM_BIN_PATH")
+
+if not NPM_BIN_PATH:
+    possible_paths = [
+        "C:\Program Files\nodejs\npm.cmd",
+        "/home/jalan/.nvm/versions/node/v22.12.0/bin/npm",
+        "/opt/homebrew/bin/npm"
+    ]
+    NPM_BIN_PATH = next((path for path in possible_paths if os.path.exists(path)), None)
+
+    if not NPM_BIN_PATH:
+        raise FileNotFoundError("NPM binary not found. Please update the paths.")
+
 
 # Application definition
 
