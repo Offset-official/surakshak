@@ -237,8 +237,49 @@ def timings_page(request):
 def camera_page(request):
     return render(request, "settings/camera_mod.html")
 
+## Settings -> Respondents Page
+def respondents_page(request):
+    pop_up = request.GET.get("pop_up", "false").lower() == "true"
+    return render(request, "settings/respondents.html", {
+        "headers": ["ID", "Name", "Phone", "Email", "Active"],
+        "respondents": RespondentSerializer(Respondent.objects.all(), many=True).data,
+        "pop_up": pop_up,
+    })
+
+def add_respondent(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        phone = request.POST.get("phone")
+        email = request.POST.get("email")
+        active = request.POST.get("is_active") == "on"
+        respondent = Respondent.objects.create(name=name, phone=phone, email=email, is_active=active)
+
+        respondent.save()
+        
+    return redirect('respondents_page')
+
+## Settings -> Incidents Mapping Page
 def incidents_mapping_page(request):
-    return render(request, "settings/incidents_map.html")
+    incident_types = IncidentType.objects.all()
+    serialized_incidents = IncidentTypeSerializer(incident_types, many=True).data
+
+    ## Filtering for tresspassing
+    tresspassing_ids = (IncidentType.objects.filter(type_name="Tresspassing").values_list('id', flat=True))
+
+    tress_avail_respondents = Respondent.objects.exclude(incident_types__in=tresspassing_ids)
+    tress_avail_serialized = RespondentSerializer(tress_avail_respondents, many=True).data
+
+    ## Filtering for fire
+    fire_ids = (IncidentType.objects.filter(type_name="Fire").values_list('id', flat=True))
+
+    fire_avail_respondents = Respondent.objects.exclude(incident_types__in=fire_ids)
+    fire_avail_serialized = RespondentSerializer(fire_avail_respondents, many=True).data
+
+    return render(request, "settings/incidents_map.html", {
+        "incident_mappings": serialized_incidents,
+        "available_tress_respondents": tress_avail_serialized,
+        "available_fire_respondents": fire_avail_serialized,
+    })
 
 @require_http_methods(["GET", "POST"])
 def resolve(request, incident_id):
@@ -355,27 +396,6 @@ def get_respondent_names():
         respondents = trespassing_type.respondents.all()
         return [resp.name for resp in respondents]
     return []
-
-## Settings -> Respondents Page
-def respondents_page(request):
-    pop_up = request.GET.get("pop_up", "false").lower() == "true"
-    return render(request, "settings/respondents.html", {
-        "headers": ["ID", "Name", "Phone", "Email", "Active"],
-        "respondents": RespondentSerializer(Respondent.objects.all(), many=True).data,
-        "pop_up": pop_up,
-    })
-
-def add_respondent(request):
-    if request.method == "POST":
-        name = request.POST.get("name")
-        phone = request.POST.get("phone")
-        email = request.POST.get("email")
-        active = request.POST.get("is_active") == "on"
-        respondent = Respondent.objects.create(name=name, phone=phone, email=email, is_active=active)
-
-        respondent.save()
-        
-    return redirect('respondents_page')
 
 @require_GET
 def incidents(request):
