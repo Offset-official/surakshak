@@ -27,7 +27,7 @@ EMAIL_USE_SSL = False
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-MEDIA_ROOT = os.path.join(BASE_DIR, 'surakshak/media')
+MEDIA_ROOT = os.path.join(BASE_DIR, "surakshak/media")
 MEDIA_URL = "media/"
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -39,22 +39,23 @@ SECRET_KEY = "django-insecure-_6k92yji3ysvkb_7w@9$ggdw8^br+pq(ti=j3us01_12gnpv_1
 DEBUG = True
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["10.1.59.6", "0.0.0.0"]
 
 TAILWIND_APP_NAME = "surakshak"
 
 NPM_BIN_PATH = os.getenv("NPM_BIN_PATH")
 
-if not NPM_BIN_PATH:
-    possible_paths = [
-        "C:\Program Files\nodejs\npm.cmd",
-        "/home/jalan/.nvm/versions/node/v22.12.0/bin/npm",
-        "/opt/homebrew/bin/npm"
-    ]
-    NPM_BIN_PATH = next((path for path in possible_paths if os.path.exists(path)), None)
+# if not NPM_BIN_PATH:
+#     possible_paths = [
+#         "C:\Program Files\nodejs\npm.cmd",
+#         # "/home/jalan/.nvm/versions/node/v22.12.0/bin/npm",
+#         # "/opt/homebrew/bin/npm"
+#     ]
+#     NPM_BIN_PATH = next((path for path in possible_paths if os.path.exists(path)), None)
 
-    if not NPM_BIN_PATH:
-        raise FileNotFoundError("NPM binary not found. Please update the paths.")
+#     if not NPM_BIN_PATH:
+#         raise FileNotFoundError("NPM binary not found. Please update the paths.")
+NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
 
 
 # Application definition
@@ -69,7 +70,7 @@ INSTALLED_APPS = [
     "tailwind",
     "surakshak",
     "django_browser_reload",
-    'widget_tweaks',
+    "widget_tweaks",
 ]
 
 MIDDLEWARE = [
@@ -146,9 +147,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-INTERNAL_IPS = [
-    "127.0.0.1",
-]
+INTERNAL_IPS = ["127.0.0.1", "0.0.0.0", "localhost", "10.1.59.6"]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
