@@ -30,7 +30,7 @@
 
 <!-- Incidents Table -->
 <div class="overflow-x-auto rounded-lg">
-    <table id="incidentsTable" class="min-w-full divide-y divide-gray-700">
+    <table id="incidentsTable" class="min-w-full divide-y divide-primaryBg">
         <thead class="bg-primaryHighlight/50">
             <tr>
                 <th class="px-6 py-3 text-left text-md font-bold text-gray-300 uppercase tracking-wider w-10p">ID</th>
@@ -42,7 +42,7 @@
                 <th class="px-6 py-3 text-left text-md font-bold text-gray-300 uppercase tracking-wider w-10p">Photo</th> <!-- New Photo Column -->
             </tr>
         </thead>
-        <tbody class="bg-primaryHighlight divide-y divide-gray-700">
+        <tbody class="bg-primaryHighlight divide-y divide-primaryBg">
             {% for incident in incidents %}
             <tr class="{% if forloop.counter > 50 %}hidden{% endif %}">
                 <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-100">{{ incident.id }}</td>
@@ -89,9 +89,9 @@
 
 <!-- Pagination Controls -->
 <div id="paginationControls" class="mt-4 flex justify-center items-center space-x-4">
-    <button id="prevPage" class="px-4 py-2 bg-gray-700 text-gray-200 rounded disabled:opacity-50" disabled>Prev</button>
+    <button id="prevPage" class="px-4 py-2 bg-primaryHighlight text-gray-200 rounded disabled:opacity-50" disabled>Prev</button>
     <span id="pageInfo" class="text-lg">Page 1</span>
-    <button id="nextPage" class="px-4 py-2 bg-gray-700 text-gray-200 rounded">Next</button>
+    <button id="nextPage" class="px-4 py-2 bg-primaryHighlight text-gray-200 rounded">Next</button>
 </div>
 
 <!-- Modal Popup for Photo -->
