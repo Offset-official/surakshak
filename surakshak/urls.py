@@ -9,7 +9,7 @@ from .views import (
     video_feed,
     notify_page,
     logs_page,
-    settings,
+    settings_page,
     toggle_status,
     notify_api,
     timings_page,
@@ -17,9 +17,13 @@ from .views import (
     resolve,
     respondents_page,
     add_respondent,
+    settings_page,
     incidents,
     camera_adjust,
-    single_stream_page
+    single_stream_page,
+    camera_page,
+    incidents_mapping_page,
+    assign_respondent
 )
 
 urlpatterns = [
@@ -27,7 +31,7 @@ urlpatterns = [
     path("streams/", stream_page, name="stream_page"),
     path("notify/", notify_page, name="notify_page"),
     path("logs/", logs_page, name="logs_page"),
-    path("settings/", settings, name="settings"),
+    path("settings/", settings_page, name="settings"),
     path("video_feed/<str:camera_name>/", video_feed, name="video_feed"),
     path("toggle-status/", toggle_status, name="toggle_status"),
     path("__reload__/", include("django_browser_reload.urls")),
@@ -40,5 +44,8 @@ urlpatterns = [
     path("incidents", incidents, name="incidents"),
     path("camera_adjust", camera_adjust, name="camera_adjust"),
     path('stream/<str:camera_name>/', single_stream_page, name='single_stream_page'),
+    path('settings/camera_page', camera_page, name='camera_page'),
+    path('settings/incidents_mapping', incidents_mapping_page, name='incidents_mapping_page'),
+    path('settings/assign_respondent/', assign_respondent, name='assign_respondent')
     
 ] + static(django_settings.MEDIA_URL, document_root=django_settings.MEDIA_ROOT)
