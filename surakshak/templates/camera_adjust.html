@@ -8,38 +8,32 @@
     {% if messages %}
         <div class="mb-4">
             {% for message in messages %}
-                <div class="p-4 mb-2 rounded {% if message.tags == 'error' %}bg-red-200 text-red-800{% elif message.tags == 'success' %}bg-green-200 text-green-800{% endif %}">
+                <div class="p-4 mb-2 rounded 
+                    {% if message.tags == 'error' %}
+                        bg-red-200 text-red-800
+                    {% elif message.tags == 'success' %}
+                        bg-green-200 text-green-800
+                    {% endif %}">
                     {{ message }}
                 </div>
             {% endfor %}
         </div>
     {% endif %}
-    
-    <!-- Step 1: Select Camera -->
+
+    <!-- 1) Capture Snapshot Directly -->
     <form method="post" class="mb-6">
         {% csrf_token %}
-        <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <label for="camera_id" class="text-lg font-medium">Select Camera:</label>
-            <select name="camera_id" id="camera_id" class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black" >
-                <option value="">-- Select a Camera --</option>
-                {% for camera in cameras %}
-                    <option value="{{ camera.id }}" class="text-black"
-                        {% if selected_camera and camera.id == selected_camera.id %}
-                            selected
-                        {% endif %}
-                    >{{ camera.name }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit" name="capture_snapshot" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
-                Capture Snapshot
-            </button>
-        </div>
+        <button type="submit" name="capture_snapshot" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+            Capture Snapshot
+        </button>
     </form>
-    
+
     {% if snapshot_url %}
-        <!-- Step 2: Display Snapshot and Adjust Coordinates -->
+        <!-- 2) Display Snapshot and Adjust Coordinates -->
         <div class="mb-6">
-            <h2 class="text-2xl font-semibold mb-4">Adjust Detection Region for "{{ selected_camera.name }}"</h2>
+            <h2 class="text-2xl font-semibold mb-4">
+                Adjust Detection Region for "{{ selected_camera.name }}"
+            </h2>
             <div class="relative">
                 <img id="snapshotImage" src="{{ snapshot_url }}" alt="Snapshot" class="w-full h-auto border rounded">
                 <!-- Overlay Rectangle -->
@@ -47,18 +41,25 @@
             </div>
         </div>
         
-        <!-- Step 3: Adjust Coordinates via Sliders -->
+        <!-- 3) Coordinate Sliders -->
         <div class="mb-6">
             <h3 class="text-xl font-medium mb-4">Select Detection Region:</h3>
             <form method="post">
                 {% csrf_token %}
-                <input type="hidden" name="camera_id" value="{{ selected_camera.id }}">
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <!-- X1 Slider -->
                     <div>
-                        <label for="x1" class="block text-sm font-medium text-gray-700 mb-1">X1:</label>
-                        <input type="range" id="x1" name="x1" min="0" max="100" value="{{ selected_camera.x1|default:0 }}" class="w-full">
+                        <label for="x1" class="block text-sm font-medium text-gray-700 mb-1">
+                            X1:
+                        </label>
+                        <input type="range"
+                               id="x1"
+                               name="x1"
+                               min="0"
+                               max="100"
+                               value="{{ selected_camera.x1|default:0 }}"
+                               class="w-full">
                         <div class="flex justify-between text-sm text-gray-600">
                             <span>0</span>
                             <span id="x1Value">{{ selected_camera.x1|default:0 }}</span>
@@ -68,8 +69,16 @@
                     
                     <!-- X2 Slider -->
                     <div>
-                        <label for="x2" class="block text-sm font-medium text-gray-700 mb-1">X2:</label>
-                        <input type="range" id="x2" name="x2" min="0" max="100" value="{{ selected_camera.x2|default:100 }}" class="w-full">
+                        <label for="x2" class="block text-sm font-medium text-gray-700 mb-1">
+                            X2:
+                        </label>
+                        <input type="range"
+                               id="x2"
+                               name="x2"
+                               min="0"
+                               max="100"
+                               value="{{ selected_camera.x2|default:100 }}"
+                               class="w-full">
                         <div class="flex justify-between text-sm text-gray-600">
                             <span>0</span>
                             <span id="x2Value">{{ selected_camera.x2|default:100 }}</span>
@@ -79,8 +88,16 @@
                     
                     <!-- Y1 Slider -->
                     <div>
-                        <label for="y1" class="block text-sm font-medium text-gray-700 mb-1">Y1:</label>
-                        <input type="range" id="y1" name="y1" min="0" max="100" value="{{ selected_camera.y1|default:0 }}" class="w-full">
+                        <label for="y1" class="block text-sm font-medium text-gray-700 mb-1">
+                            Y1:
+                        </label>
+                        <input type="range"
+                               id="y1"
+                               name="y1"
+                               min="0"
+                               max="100"
+                               value="{{ selected_camera.y1|default:0 }}"
+                               class="w-full">
                         <div class="flex justify-between text-sm text-gray-600">
                             <span>0</span>
                             <span id="y1Value">{{ selected_camera.y1|default:0 }}</span>
@@ -90,8 +107,16 @@
                     
                     <!-- Y2 Slider -->
                     <div>
-                        <label for="y2" class="block text-sm font-medium text-gray-700 mb-1">Y2:</label>
-                        <input type="range" id="y2" name="y2" min="0" max="100" value="{{ selected_camera.y2|default:100 }}" class="w-full">
+                        <label for="y2" class="block text-sm font-medium text-gray-700 mb-1">
+                            Y2:
+                        </label>
+                        <input type="range"
+                               id="y2"
+                               name="y2"
+                               min="0"
+                               max="100"
+                               value="{{ selected_camera.y2|default:100 }}"
+                               class="w-full">
                         <div class="flex justify-between text-sm text-gray-600">
                             <span>0</span>
                             <span id="y2Value">{{ selected_camera.y2|default:100 }}</span>
@@ -100,7 +125,9 @@
                     </div>
                 </div>
                 
-                <button type="submit" name="save_coordinates" class="mt-6 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                <button type="submit"
+                        name="save_coordinates"
+                        class="mt-6 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
                     Save Coordinates
                 </button>
             </form>
@@ -114,11 +141,12 @@
     document.addEventListener('DOMContentLoaded', function () {
         const snapshotImage = document.getElementById('snapshotImage');
         const overlay = document.getElementById('overlay');
+        
         const x1Slider = document.getElementById('x1');
         const x2Slider = document.getElementById('x2');
         const y1Slider = document.getElementById('y1');
         const y2Slider = document.getElementById('y2');
-        
+
         const x1Value = document.getElementById('x1Value');
         const x2Value = document.getElementById('x2Value');
         const y1Value = document.getElementById('y1Value');
@@ -126,6 +154,8 @@
         
         // Function to update overlay position and size
         function updateOverlay() {
+            if (!snapshotImage) return;
+            
             const imgWidth = snapshotImage.clientWidth;
             const imgHeight = snapshotImage.clientHeight;
             
@@ -134,86 +164,84 @@
             const y1 = parseInt(y1Slider.value);
             const y2 = parseInt(y2Slider.value);
             
-            // Calculate pixel values based on percentage
             const left = (x1 / 100) * imgWidth;
             const top = (y1 / 100) * imgHeight;
             const width = ((x2 - x1) / 100) * imgWidth;
             const height = ((y2 - y1) / 100) * imgHeight;
             
-            overlay.style.left = `${left}px`;
-            overlay.style.top = `${top}px`;
-            overlay.style.width = `${width}px`;
-            overlay.style.height = `${height}px`;
+            overlay.style.left = left + 'px';
+            overlay.style.top = top + 'px';
+            overlay.style.width = width + 'px';
+            overlay.style.height = height + 'px';
         }
-        
-        // Initialize overlay once image is loaded
-        snapshotImage.onload = function() {
-            updateOverlay();
+
+        // If the image is already cached, onload may not fire. Call once directly.
+        updateOverlay();
+
+        // Initialize overlay once image is fully loaded
+        if (snapshotImage) {
+            snapshotImage.onload = function() {
+                updateOverlay();
+            }
         }
-        
-        // Event listeners for sliders
-        x1Slider.addEventListener('input', function() {
+
+        // Slider event listeners
+        function handleX1Change() {
             let x1 = parseInt(x1Slider.value);
             let x2 = parseInt(x2Slider.value);
-            
             if (x1 >= x2) {
                 x2 = x1 + 1;
-                x2Slider.value = x2 > 100 ? 100 : x2;
-                x2Value.textContent = x2;
+                if (x2 > 100) x2 = 100;
+                x2Slider.value = x2;
             }
-            
-            x1Value.textContent = x1;
-            x2Value.textContent = x2;
+            x1Value.textContent = x1Slider.value;
+            x2Value.textContent = x2Slider.value;
             updateOverlay();
-        });
+        }
         
-        x2Slider.addEventListener('input', function() {
+        function handleX2Change() {
             let x1 = parseInt(x1Slider.value);
             let x2 = parseInt(x2Slider.value);
-            
             if (x2 <= x1) {
                 x1 = x2 - 1;
-                x1Slider.value = x1 < 0 ? 0 : x1;
-                x1Value.textContent = x1;
+                if (x1 < 0) x1 = 0;
+                x1Slider.value = x1;
             }
-            
-            x2Value.textContent = x2;
-            x1Value.textContent = x1;
+            x2Value.textContent = x2Slider.value;
+            x1Value.textContent = x1Slider.value;
             updateOverlay();
-        });
+        }
         
-        y1Slider.addEventListener('input', function() {
+        function handleY1Change() {
             let y1 = parseInt(y1Slider.value);
             let y2 = parseInt(y2Slider.value);
-            
             if (y1 >= y2) {
                 y2 = y1 + 1;
-                y2Slider.value = y2 > 100 ? 100 : y2;
-                y2Value.textContent = y2;
+                if (y2 > 100) y2 = 100;
+                y2Slider.value = y2;
             }
-            
-            y1Value.textContent = y1;
-            y2Value.textContent = y2;
+            y1Value.textContent = y1Slider.value;
+            y2Value.textContent = y2Slider.value;
             updateOverlay();
-        });
+        }
         
-        y2Slider.addEventListener('input', function() {
+        function handleY2Change() {
             let y1 = parseInt(y1Slider.value);
             let y2 = parseInt(y2Slider.value);
-            
             if (y2 <= y1) {
                 y1 = y2 - 1;
-                y1Slider.value = y1 < 0 ? 0 : y1;
-                y1Value.textContent = y1;
+                if (y1 < 0) y1 = 0;
+                y1Slider.value = y1;
             }
-            
-            y2Value.textContent = y2;
-            y1Value.textContent = y1;
+            y2Value.textContent = y2Slider.value;
+            y1Value.textContent = y1Slider.value;
             updateOverlay();
-        });
+        }
         
-        // Initial overlay update
-        updateOverlay();
+        if (x1Slider) x1Slider.addEventListener('input', handleX1Change);
+        if (x2Slider) x2Slider.addEventListener('input', handleX2Change);
+        if (y1Slider) y1Slider.addEventListener('input', handleY1Change);
+        if (y2Slider) y2Slider.addEventListener('input', handleY2Change);
     });
 </script>
 {% endblock script %}
