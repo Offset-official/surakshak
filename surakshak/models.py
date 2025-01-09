@@ -4,7 +4,7 @@ from django.utils.timezone import now
 
 class IncidentType(models.Model):
     type_name = models.CharField(max_length=50, null=True)  # e.g., "Trespassing", "Fire"
-    respondents = models.ManyToManyField("Respondent", related_name="incident_types", null=True)  # Respondents for this type
+    respondents = models.ManyToManyField("Respondent", related_name="incident_types")  # Respondents for this type
 
     def __str__(self):
         return f"{self.type_name}"

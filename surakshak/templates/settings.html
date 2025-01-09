@@ -1,6 +1,68 @@
 {% extends "layout1.html" %}
 
 {% block content %}
-<div class="flex text-5xl font-bold mb-5">Settings</div>
+<div class="grid grid-cols-8 pt-3 sm:grid-cols-10">
+    <!-- Sidebar -->
+    <div class="col-span-2 hidden sm:block">
+        <h1 class="text-6xl font-semibold text-white-800">Settings</h1>
+        <ul>
+            <li data-section="Respondents"
+                class="mt-5 cursor-pointer border-l-2 border-transparent px-2 py-2 font-semibold transition hover:border-l-blue-700 hover:text-blue-700">
+                <a href="{% url 'respondents_page' %}">Respondents</a>
+            </li>
+            <li data-section="Camera"
+                class="mt-5 cursor-pointer border-l-2 border-transparent px-2 py-2 font-semibold transition hover:border-l-blue-700 hover:text-blue-700">
+                <a href="{% url 'camera_page' %}">Camera</a>
+            </li>
+            <li data-section="Schedule"
+                class="mt-5 cursor-pointer border-l-2 border-transparent px-2 py-2 font-semibold transition hover:border-l-blue-700 hover:text-blue-700">
+                <a href="{% url 'timings' %}">Schedule</a>
+            </li>
+            <li data-section="IncidentsMapping"
+                class="mt-5 cursor-pointer border-l-2 border-transparent px-2 py-2 font-semibold transition hover:border-l-blue-700 hover:text-blue-700">
+                <a href="{% url 'incidents_mapping_page' %}">Incidents Mapping</a>
+            </li>
+        </ul>
+    </div>
 
+    <!-- Main Content -->
+    <div class="col-span-6 sm:col-span-8">
+        <div>
+            {% block settings_content %}
+            {% endblock settings_content %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const sidebarItems = document.querySelectorAll("[data-section]");
+
+        // Highlight the active item based on the current URL
+        const updateActiveItem = () => {
+            const currentPath = window.location.pathname;
+
+            sidebarItems.forEach((item) => {
+                const link = item.querySelector("a");
+                if (link && link.getAttribute("href") === currentPath) {
+                    // Add active class to the matching item
+                    item.classList.add("text-blue-700", "border-l-blue-700");
+                } else {
+                    // Remove active class from non-matching items
+                    item.classList.remove("text-blue-700", "border-l-blue-700");
+                }
+            });
+        };
+
+        updateActiveItem();
+
+        sidebarItems.forEach((item) => {
+            item.addEventListener("click", () => {
+                // Update the active item manually after click
+                sidebarItems.forEach((i) => i.classList.remove("text-blue-700", "border-l-blue-700"));
+                item.classList.add("text-blue-700", "border-l-blue-700");
+            });
+        });
+    });
+</script>
 {% endblock content %}
