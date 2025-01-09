@@ -26,6 +26,11 @@ class SurakshakConfig(AppConfig):
             return
         if "runserver" not in sys.argv and "test" not in sys.argv:
             return
+        
+        from .models import IncidentType
+        if IncidentType.objects.count() == 0:
+            IncidentType.objects.create(type_name="Trespassing")
+        
 
         # Define your RTSP streams here
         from .models import Camera
