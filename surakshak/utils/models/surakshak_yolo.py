@@ -181,10 +181,14 @@ class YOLOv8:
         detections = []
         # Iterate over the selected indices after non-maximum suppression
         for i in indices:
+
             # Get the box, score, and class ID corresponding to the index
             box = boxes[i]
             score = scores[i]
             class_id = class_ids[i]
+
+            if class_id: # if class id is not 0 (not human)
+                continue
             coords = {
                 "x1": box[0],
                 "y1": box[1],
@@ -205,6 +209,7 @@ class YOLOv8:
                     "coords_ratio": coords_ratio,
                 }
             )
+            
             # Draw the detection on the input image
             self.draw_detections(input_image, box, score, class_id)
 
