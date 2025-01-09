@@ -14,15 +14,9 @@
     {% block styling %}{% endblock %}
   </head>
 
-<<<<<<< HEAD
   <body class="bg-primaryBg text-textColor font-sans p-10 relative">
     <!-- Navbar -->
     <header class="flex justify-between items-center w-full mb-10">
-=======
-  <body class="bg-primaryBg text-textColor font-sans p-10 relative overflow-x-hidden">
-    <!-- Header Section -->
-    <div class="flex flex-col xl:flex-row justify-between w-full items-center mb-10 ">
->>>>>>> main
       <!-- Logo Section -->
       <a class="flex gap-4" href="/">
         <div class="h-full">
@@ -141,19 +135,12 @@
 
       </div>
       </div>
-<<<<<<< HEAD
     </header>
-=======
->>>>>>> main
 
     <!-- Intrusion Popup (Initially Hidden) -->
     <div
       id="intrusion-popup"
-<<<<<<< HEAD
-      class="hidden fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-red-700 text-white p-6 rounded shadow-md w-80 text-center animate-pulse"
-=======
       class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-red-600 text-white p-6 rounded shadow-md w-1/2 h-96 text-center justify-center items-center flex flex-col"
->>>>>>> main
     >
       <p class="mb-4 text-2xl font-bold">
         Intrusion has been detected. Click here to resolve.
@@ -179,47 +166,6 @@
     <!-- JavaScript -->
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-<<<<<<< HEAD
-        // Grab references once
-=======
-        let isToggling = false; // Prevent multiple toggle requests
-
-        const internetIcon = document.getElementById("internet-icon");
-        const internetStatus = document.getElementById("internet-status");
-
-        async function checkInternetConnection() {
-          try {
-            const start = Date.now();
-            const response = await fetch("https://www.google.com/generate_204", {
-              mode: "no-cors",
-              cache: "no-store",
-            });
-            if (response) {
-              const responseTime = Date.now() - start;
-          
-              // Update UI for successful connection
-              internetIcon.classList.remove("text-gray-400", "text-red-500");
-              internetIcon.classList.add("text-green-500");
-              internetStatus.textContent = `Connected (${responseTime}ms)`;
-              internetStatus.classList.remove("text-red-500");
-              internetStatus.classList.add("text-green-500");
-            } else {
-              throw new Error("Response not OK");
-            }
-          } catch (error) {
-            // Update UI for offline status
-            internetIcon.classList.remove("text-gray-400", "text-green-500");
-            internetIcon.classList.add("text-red-500");
-            internetStatus.textContent = "Offline";
-            internetStatus.classList.remove("text-green-500");
-            internetStatus.classList.add("text-red-500");
-          }
-          
-        }
-
-        
-
->>>>>>> main
         const heartbeatIcon = document.getElementById("heartbeat-icon");
         const cautionIcon = document.getElementById("caution-icon");
         const heartbeatTooltip = document.getElementById("heartbeat-tooltip");
