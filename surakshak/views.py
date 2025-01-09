@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import StreamingHttpResponse, HttpResponse, JsonResponse
+from django.urls import reverse
 from django.views.decorators import gzip
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from .utils.camera_manager import CameraManager
@@ -12,6 +13,7 @@ from .serializers import (
     IncidentSerializer,
     RespondentSerializer,
     IncidentTypeSerializer,
+    CameraSerializer,
 )
 from twilio.rest import Client
 import os
@@ -30,12 +32,46 @@ from surakshak.utils.logs import MyHandler
 from django.contrib import messages
 from surakshak.utils.camera_manager import CameraManager
 import cv2
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from surakshak.utils.notifs import (
+    send_call_notification,
+    send_email_notification,
+    send_sms_notification,
+    send_whatsapp_notification,
+)
+
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MyHandler())
 
 
+def login_page(request):
+    next_url = request.GET.get(
+        "next", "homepage"
+    )
+    if request.user.is_authenticated:
+        return render(request, "homepage.html")
+    return render(request, "auth_page.html", {"next": next_url})
+
+
+def login(request):
+    username = request.POST.get("username")
+    password = request.POST.get("password")
+    user = authenticate(request, username=username, password=password)
+    next_url = request.POST.get("next", "homepage")
+
+    if user is not None:
+        auth_login(request, user)
+        return redirect(next_url)
+    else:
+        return render(request, "auth_page.html", {"error": "Invalid credentials"})
+
+
 def homepage(request):
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login_page')}?next=homepage")
     return render(request, "homepage.html")
 
 
@@ -46,20 +82,25 @@ def heartbeat(request):
     Expected response format: {'success': True, 'status': 'ACTIVE'/'INACTIVE', 'lockdown': True/False}
     """
     try:
-        status = SystemConfig.instrusion_state
-        ld = SystemConfig.lockdown
-        logger.debug(f"Heartbeat check: {status}, Lockdown: {ld}")
-        incident_id = SystemConfig.incident_id
+        # status = SystemConfig.instrusion_state
+        # ld = SystemConfig.lockdown
+        # logger.debug(f"Heartbeat check: {status}, Lockdown: {ld}")
+        # incident_id = SystemConfig.incident_id
         return JsonResponse(
             {
                 "success": True,
-                "status": status,
-                "lockdown": ld,
-                "incident_id": incident_id,
+                "status": 0,
+                "lockdown": False,
+                "incident_id": 1,
             }
         )
         # return JsonResponse(
-        #     {"success": True, "status": 1, "lockdown": False, "incident_id": 2}
+        #     {
+        #         "success": True,
+        #         "status": status,
+        #         "lockdown": ld,
+        #         "incident_id": incident_id,
+        #     }
         # )
     except Exception as e:
         # logger.error(f"Heartbeat error: {e}")
@@ -102,22 +143,29 @@ def stream_page(request):
     # get names of 3 cameras
     cctvs = Camera.objects.all()
     cctvNames = [cctv.name for cctv in cctvs]
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login_page')}?next=stream_page")
     return render(request, "streams.html", {"cctvs": cctvNames})
 
 
 def notify_page(request):
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login_page')}?next=notify_page")
     return render(request, "notify.html")
 
 
 def logs_page(request):
     logs = Log.objects.all().order_by("-created_at")
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login_page')}?next=logs_page")
     return render(request, "logs.html", {"logs": logs})
 
 
 def settings_page(request):
-    active_tab = request.GET.get('tab', 'respondents')  # Default to 'respondents'
+    active_tab = request.GET.get("tab", "respondents")  # Default to 'respondents'
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login_page')}?next=settings")
     return render(request, "settings.html", {"active_tab": active_tab})
-
 
 
 @require_POST
@@ -162,11 +210,10 @@ def notify_api(
             if not incident_groups:
                 incident_groups = ["trespassing", "fire", "idk"]
 
-            # TODO get all the respondents from the given groups
-
             Respondents = RespondentSerializer(Respondent.objects.all(), many=True).data
-            sample_url = "https://www.incident_page.com"
-            main_text = f"Dear Surakshak,\n\nPlease check out the incident snippet and other information at {sample_url} to resolve the alert as soon as possible.  \n\nRegards, \nInstitution"
+
+            url = reverse("resolve", args=[incident_data["id"]])
+            main_text = f"Dear Surakshak,\n\nPlease check out the incident snippet and other information at {url} to resolve the alert as soon as possible.  \n\nRegards, \nInstitution"
             subject = f"Alert! Incident Type: {incident_data['incident_type']} Detected at {incident_data['camera']}"
             phnumbers = [respondent["phone"] for respondent in Respondents]
             account_sid = os.getenv("WHATSAPP_ACCOUNT_SID")
@@ -244,23 +291,59 @@ def timings_page(request):
     elif request.method == "GET":
         form = InferenceScheduleForm(instance=schedule)
         # render the form
+        if not request.user.is_authenticated:
+            return redirect(f"{reverse('login_page')}?next=timings")
         return render(request, "timings.html", {"form": form})
 
     inferenceSchedule = form.objects.get(pk=1)
 
     return render(request, "timings.html")
 
+
 def camera_page(request):
-    return render(request, "settings/camera_mod.html")
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login_page')}?next=camera_page")
+    pop_up = request.GET.get("pop_up", "false").lower() == "true"
+    return render(
+        request,
+        "settings/camera_mod.html",
+        {
+            "headers": ["ID", "Name", "Location", "RTSP-URL"],
+            "respondents": CameraSerializer(Camera.objects.all(), many=True).data,
+            "pop_up": pop_up,
+        },
+    )
+
+
+def add_camera(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        location = request.POST.get("location")
+        rtsp_url = request.POST.get("rtsp_url")
+        camera = Camera.objects.create(name=name, location=location, rtsp_url=rtsp_url)
+
+        camera.save()
+
+    return redirect("camera_page")
+
 
 ## Settings -> Respondents Page
 def respondents_page(request):
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login_page')}?next=respondents_page")
     pop_up = request.GET.get("pop_up", "false").lower() == "true"
-    return render(request, "settings/respondents.html", {
-        "headers": ["ID", "Name", "Phone", "Email", "Active"],
-        "respondents": RespondentSerializer(Respondent.objects.all(), many=True).data,
-        "pop_up": pop_up,
-    })
+    return render(
+        request,
+        "settings/respondents.html",
+        {
+            "headers": ["ID", "Name", "Phone", "Email", "Active"],
+            "respondents": RespondentSerializer(
+                Respondent.objects.all(), many=True
+            ).data,
+            "pop_up": pop_up,
+        },
+    )
+
 
 def add_respondent(request):
     if request.method == "POST":
@@ -268,11 +351,14 @@ def add_respondent(request):
         phone = request.POST.get("phone")
         email = request.POST.get("email")
         active = request.POST.get("is_active") == "on"
-        respondent = Respondent.objects.create(name=name, phone=phone, email=email, is_active=active)
+        respondent = Respondent.objects.create(
+            name=name, phone=phone, email=email, is_active=active
+        )
 
         respondent.save()
-        
-    return redirect('respondents_page')
+
+    return redirect("respondents_page")
+
 
 ## Settings -> Incidents Mapping Page
 def incidents_mapping_page(request):
@@ -282,29 +368,46 @@ def incidents_mapping_page(request):
     serialized_incidents = IncidentTypeSerializer(incident_types, many=True).data
 
     ## Filtering for tresspassing
-    tresspassing_ids = (IncidentType.objects.filter(type_name="Tresspassing").values_list('id', flat=True))
+    tresspassing_ids = IncidentType.objects.filter(
+        type_name="Tresspassing"
+    ).values_list("id", flat=True)
 
-    tress_avail_respondents = Respondent.objects.exclude(incident_types__in=tresspassing_ids)
-    tress_avail_serialized = RespondentSerializer(tress_avail_respondents, many=True).data
+    tress_avail_respondents = Respondent.objects.exclude(
+        incident_types__in=tresspassing_ids
+    )
+    tress_avail_serialized = RespondentSerializer(
+        tress_avail_respondents, many=True
+    ).data
 
     ## Filtering for fire
-    fire_ids = (IncidentType.objects.filter(type_name="Fire").values_list('id', flat=True))
-
+    fire_ids = IncidentType.objects.filter(type_name="Fire").values_list(
+        "id", flat=True
+    )
     fire_avail_respondents = Respondent.objects.exclude(incident_types__in=fire_ids)
     fire_avail_serialized = RespondentSerializer(fire_avail_respondents, many=True).data
 
-    return render(request, "settings/incidents_map.html", {
-        "incident_mappings": serialized_incidents,
-        "available_tress_respondents": tress_avail_serialized,
-        "available_fire_respondents": fire_avail_serialized,
-        "pop_up": pop_up,
-        "incident_type": incident_type
-    })
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login_page')}?next=incidents_mapping_page")
+
+    return render(
+        request,
+        "settings/incidents_map.html",
+        {
+            "incident_mappings": serialized_incidents,
+            "available_tress_respondents": tress_avail_serialized,
+            "available_fire_respondents": fire_avail_serialized,
+            "pop_up": pop_up,
+            "incident_type": incident_type,
+        },
+    )
+
 
 def assign_respondent(request):
     if request.method == "POST":
         type_name = request.POST.get("incident_type")
-        selected_respondents = request.POST.getlist("selected_respondents")  # Retrieve selected IDs
+        selected_respondents = request.POST.getlist(
+            "selected_respondents"
+        )  # Retrieve selected IDs
 
         for respondent in selected_respondents:
             name = respondent
@@ -312,19 +415,26 @@ def assign_respondent(request):
             try:
                 respondent = Respondent.objects.get(name=name)
             except Respondent.DoesNotExist:
-                return JsonResponse({"success": False, "error": "Respondent does not exist"}, status=400)
+                return JsonResponse(
+                    {"success": False, "error": "Respondent does not exist"}, status=400
+                )
 
             # Check if the incident type exists
-            incident_type, created = IncidentType.objects.get_or_create(type_name=type_name)
+            incident_type, created = IncidentType.objects.get_or_create(
+                type_name=type_name
+            )
 
             # Check if the respondent is already assigned
             if incident_type.respondents.filter(id=respondent.id).exists():
-                return JsonResponse({"success": False, "error": "Respondent already assigned"}, status=400)
+                return JsonResponse(
+                    {"success": False, "error": "Respondent already assigned"},
+                    status=400,
+                )
 
             # Add the respondent to the incident type
             incident_type.respondents.add(respondent)
 
-    return redirect('incidents_mapping_page')
+    return redirect("incidents_mapping_page")
 
 
 @require_http_methods(["GET", "POST"])
@@ -468,30 +578,12 @@ def get_respondent_names():
         return [resp.name for resp in respondents]
     return []
 
-## Settings -> Respondents Page
-def respondents_page(request):
-    pop_up = request.GET.get("pop_up", "false").lower() == "true"
-    return render(request, "settings/respondents.html", {
-        "headers": ["ID", "Name", "Phone", "Email", "Active"],
-        "respondents": RespondentSerializer(Respondent.objects.all(), many=True).data,
-        "pop_up": pop_up,
-    })
-
-def add_respondent(request):
-    if request.method == "POST":
-        name = request.POST.get("name")
-        phone = request.POST.get("phone")
-        email = request.POST.get("email")
-        active = request.POST.get("is_active") == "on"
-        respondent = Respondent.objects.create(name=name, phone=phone, email=email, is_active=active)
-
-        respondent.save()
-        
-    return redirect('respondents_page')
 
 @require_GET
 def incidents(request):
     all_incidents = Incident.objects.all().order_by("-created_at")
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login_page')}?next=incidents")
     return render(request, "incidents.html", {"incidents": all_incidents})
 
 
@@ -505,12 +597,16 @@ def camera_adjust(request):
             # Step 1 & 2: Capture Snapshot
             camera_id = request.POST.get("camera_id")
             if not camera_id:
+                if not request.user.is_authenticated:
+                    return redirect(f"{reverse('login_page')}?next=camera_adjust")
                 messages.error(request, "Please select a camera.")
                 return redirect("camera_adjust")
 
             try:
                 camera = Camera.objects.get(id=camera_id)
             except Camera.DoesNotExist:
+                if not request.user.is_authenticated:
+                    return redirect(f"{reverse('login_page')}?next=camera_adjust")
                 messages.error(request, "Selected camera does not exist.")
                 return redirect("camera_adjust")
 
@@ -518,6 +614,8 @@ def camera_adjust(request):
             # print(frame)
 
             if frame is None:
+                if not request.user.is_authenticated:
+                    return redirect(f"{reverse('login_page')}?next=camera_adjust")
                 messages.error(
                     request,
                     "Failed to capture image from the camera. Is camera viewable in streams?",
@@ -527,6 +625,8 @@ def camera_adjust(request):
             # Encode frame to JPEG
             ret, buffer = cv2.imencode(".jpg", frame)
             if not ret:
+                if not request.user.is_authenticated:
+                    return redirect(f"{reverse('login_page')}?next=camera_adjust")
                 messages.error(request, "Failed to encode the captured image.")
                 return redirect("camera_adjust")
 
@@ -546,6 +646,8 @@ def camera_adjust(request):
             context["snapshot_url"] = os.path.join(
                 django_settings.MEDIA_URL, "snapshots", image_name
             )
+            if not request.user.is_authenticated:
+                return redirect(f"{reverse('login_page')}?next=camera_adjust")
             return render(request, "camera_adjust.html", context)
 
         elif "save_coordinates" in request.POST:
@@ -557,12 +659,16 @@ def camera_adjust(request):
             y2 = request.POST.get("y2")
 
             if not all([camera_id, x1, y1, x2, y2]):
+                if not request.user.is_authenticated:
+                    return redirect(f"{reverse('login_page')}?next=camera_adjust")
                 messages.error(request, "All coordinate fields are required.")
                 return redirect("camera_adjust")
 
             try:
                 camera = Camera.objects.get(id=camera_id)
             except Camera.DoesNotExist:
+                if not request.user.is_authenticated:
+                    return redirect(f"{reverse('login_page')}?next=camera_adjust")
                 messages.error(request, "Selected camera does not exist.")
                 return redirect("camera_adjust")
 
@@ -576,9 +682,11 @@ def camera_adjust(request):
                 messages.success(request, "Coordinates saved successfully.")
             except ValueError:
                 messages.error(request, "Invalid coordinate values.")
-
+            if not request.user.is_authenticated:
+                return redirect(f"{reverse('login_page')}?next=camera_adjust")
             return redirect("camera_adjust")
-
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login_page')}?next=camera_adjust")
     return render(request, "camera_adjust.html", context)
 
 
@@ -593,5 +701,6 @@ def single_stream_page(request, camera_name):
     context = {
         "camera_name": camera.name,
     }
-
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login_page')}?next=single_stream_page")
     return render(request, "single_stream.html", context)

@@ -1,4 +1,4 @@
-{% extends "layout1.html" %}
+{% extends "layout.html" %}
 
 {% block content %}
 <div class="grid grid-cols-8 pt-3 sm:grid-cols-10">
@@ -7,19 +7,19 @@
         <h1 class="text-6xl font-semibold text-white-800">Settings</h1>
         <ul>
             <li data-section="Respondents"
-                class="mt-5 cursor-pointer border-l-2 border-transparent px-2 py-2 font-semibold transition hover:border-l-blue-700 hover:text-blue-700">
+                class="mt-5 cursor-pointer border-l-2 border-transparent px-2 py-2 font-semibold transition hover:border-l-accent hover:text-accent">
                 <a href="{% url 'respondents_page' %}">Respondents</a>
             </li>
             <li data-section="Camera"
-                class="mt-5 cursor-pointer border-l-2 border-transparent px-2 py-2 font-semibold transition hover:border-l-blue-700 hover:text-blue-700">
+                class="mt-5 cursor-pointer border-l-2 border-transparent px-2 py-2 font-semibold transition hover:border-l-accent hover:text-accent">
                 <a href="{% url 'camera_page' %}">Camera</a>
             </li>
             <li data-section="Schedule"
-                class="mt-5 cursor-pointer border-l-2 border-transparent px-2 py-2 font-semibold transition hover:border-l-blue-700 hover:text-blue-700">
+                class="mt-5 cursor-pointer border-l-2 border-transparent px-2 py-2 font-semibold transition hover:border-l-accent hover:text-accent">
                 <a href="{% url 'timings' %}">Schedule</a>
             </li>
             <li data-section="IncidentsMapping"
-                class="mt-5 cursor-pointer border-l-2 border-transparent px-2 py-2 font-semibold transition hover:border-l-blue-700 hover:text-blue-700">
+                class="mt-5 cursor-pointer border-l-2 border-transparent px-2 py-2 font-semibold transition hover:border-l-accent hover:text-accent">
                 <a href="{% url 'incidents_mapping_page' %}">Incidents Mapping</a>
             </li>
         </ul>
@@ -46,10 +46,10 @@
                 const link = item.querySelector("a");
                 if (link && link.getAttribute("href") === currentPath) {
                     // Add active class to the matching item
-                    item.classList.add("text-blue-700", "border-l-blue-700");
+                    item.classList.add("text-accent", "border-l-accent");
                 } else {
                     // Remove active class from non-matching items
-                    item.classList.remove("text-blue-700", "border-l-blue-700");
+                    item.classList.remove("text-accent", "border-l-accent");
                 }
             });
         };
@@ -59,8 +59,8 @@
         sidebarItems.forEach((item) => {
             item.addEventListener("click", () => {
                 // Update the active item manually after click
-                sidebarItems.forEach((i) => i.classList.remove("text-blue-700", "border-l-blue-700"));
-                item.classList.add("text-blue-700", "border-l-blue-700");
+                sidebarItems.forEach((i) => i.classList.remove("text-accent-700", "border-l-accent-700"));
+                item.classList.add("text-accent-700", "border-l-accent-700");
             });
         });
     });
