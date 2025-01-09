@@ -7,7 +7,7 @@
 3. Install dependencies - `pip install -r requirements.txt`
 4. Install node.js and run `npm i`
 5. Run `python3 manage.py makemigrations` and `python3 manage.py migrate`. 
-6. Open 2 terminals. Run `python3 manage.py runserver` for running Django in one terminal and run `python3 manage.py tailwind start` for enabling Tailwind with Hot Reload. 
+6. Open 2 terminals. Run `python3 manage.py runserver 0.0.0.0:8000` for running Django in one terminal and run `python3 manage.py tailwind start` for enabling Tailwind with Hot Reload. Access the application on your IP. 
 7. For running the CCTVs, please follow the instructions of `RTSP-server`
 
 ## Wiki

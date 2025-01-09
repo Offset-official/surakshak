@@ -13,8 +13,9 @@ from twilio.rest import Client
 import os
 from dotenv import load_dotenv
 from django.templatetags.static import static
-import logging 
-# import model form 
+import logging
+
+# import model form
 from .models import InferenceSchedule, Log, IncidentType
 from django.forms import ModelForm
 from django import forms
@@ -28,6 +29,7 @@ import cv2
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MyHandler())
+
 
 def homepage(request):
     return render(request, "homepage.html")
@@ -44,10 +46,22 @@ def heartbeat(request):
         ld = SystemConfig.lockdown
         logger.debug(f"Heartbeat check: {status}, Lockdown: {ld}")
         incident_id = SystemConfig.incident_id
-        return JsonResponse({'success': True, 'status': status, "lockdown" : ld, "incident_id": incident_id})
+        return JsonResponse(
+            {
+                "success": True,
+                "status": status,
+                "lockdown": ld,
+                "incident_id": incident_id,
+            }
+        )
+        # return JsonResponse(
+        #     {"success": True, "status": 1, "lockdown": False, "incident_id": 2}
+        # )
     except Exception as e:
         # logger.error(f"Heartbeat error: {e}")
-        return JsonResponse({'success': False, 'error': 'Failed to retrieve system status'}, status=500)
+        return JsonResponse(
+            {"success": False, "error": "Failed to retrieve system status"}, status=500
+        )
 
 
 @gzip.gzip_page
@@ -112,13 +126,16 @@ def toggle_status(request):
         SystemConfig.toggle()
         # logger.info(f"System status toggled to: {SystemConfig.instrusion_state}")
 
-        return JsonResponse({'success': True, 'status': SystemConfig.instrusion_state})
+        return JsonResponse({"success": True, "status": SystemConfig.instrusion_state})
     except json.JSONDecodeError:
         # logger.error("Invalid JSON in toggle_status request")
-        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+        return JsonResponse({"success": False, "error": "Invalid JSON"}, status=400)
     except Exception as e:
         # logger.error(f"Toggle status error: {e}")
-        return JsonResponse({'success': False, 'error': 'Failed to toggle system status'}, status=500)
+        return JsonResponse(
+            {"success": False, "error": "Failed to toggle system status"}, status=500
+        )
+
 
 def notify_api(
     request,
@@ -193,27 +210,27 @@ def notify_api(
         {"success": False, "error": "Invalid request method"}, status=405
     )
 
+
 def timings_page(request):
-    # create model form 
+    # create model form
     class InferenceScheduleForm(ModelForm):
         class Meta:
             model = InferenceSchedule
-            fields = "__all__" 
+            fields = "__all__"
             widgets = {
-                'start_time': forms.TimeInput(attrs={'type': 'time'}),
-                'end_time': forms.TimeInput(attrs={'type': 'time'}),
-                'monday': forms.CheckboxInput(),
-                'tuesday': forms.CheckboxInput(),
-                'wednesday': forms.CheckboxInput(),
-                'thursday': forms.CheckboxInput(),
-                'friday': forms.CheckboxInput(),
-                'saturday': forms.CheckboxInput(),
-                'sunday': forms.CheckboxInput(),
-            }  
-
+                "start_time": forms.TimeInput(attrs={"type": "time"}),
+                "end_time": forms.TimeInput(attrs={"type": "time"}),
+                "monday": forms.CheckboxInput(),
+                "tuesday": forms.CheckboxInput(),
+                "wednesday": forms.CheckboxInput(),
+                "thursday": forms.CheckboxInput(),
+                "friday": forms.CheckboxInput(),
+                "saturday": forms.CheckboxInput(),
+                "sunday": forms.CheckboxInput(),
+            }
 
     schedule = InferenceSchedule.objects.get(pk=1)
-    
+
     if request.method == "POST":
         form = InferenceScheduleForm(request.POST, instance=schedule)
         if form.is_valid():
@@ -225,12 +242,7 @@ def timings_page(request):
         # render the form
         return render(request, "timings.html", {"form": form})
 
-
-
-
-
     inferenceSchedule = form.objects.get(pk=1)
-
 
     return render(request, "timings.html")
 
@@ -357,33 +369,53 @@ def resolve(request, incident_id):
             if not selected_respondent:
                 # No respondent selected
                 logger.warning("No respondent selected for resolving the incident.")
-                return render(request, "resolve.html", {
-                    "incident_found": True,
-                    "resolved": False,
-                    "incident_type": incident_instance.incident_type,
-                    "image_url": incident_instance.image.url if incident_instance.image else "",
-                    "camera_name": incident_instance.camera,
-                    "incident_time": incident_instance.created_at,
-                    "incident_id": incident_instance.id,
-                    "respondent_names": get_respondent_names(),
-                    "error_message": "Please select a respondent to resolve the incident."
-                })
+                return render(
+                    request,
+                    "resolve.html",
+                    {
+                        "incident_found": True,
+                        "resolved": False,
+                        "incident_type": incident_instance.incident_type,
+                        "image_url": (
+                            incident_instance.image.url
+                            if incident_instance.image
+                            else ""
+                        ),
+                        "camera_name": incident_instance.camera,
+                        "incident_time": incident_instance.created_at,
+                        "incident_id": incident_instance.id,
+                        "respondent_names": get_respondent_names(),
+                        "error_message": "Please select a respondent to resolve the incident.",
+                    },
+                )
 
-            selected_respondent_instance = Respondent.objects.filter(name=selected_respondent).first()
+            selected_respondent_instance = Respondent.objects.filter(
+                name=selected_respondent
+            ).first()
             if not selected_respondent_instance:
                 # Respondent does not exist
-                logger.warning(f"Selected respondent '{selected_respondent}' does not exist.")
-                return render(request, "resolve.html", {
-                    "incident_found": True,
-                    "resolved": False,
-                    "incident_type": incident_instance.incident_type,
-                    "image_url": incident_instance.image.url if incident_instance.image else "",
-                    "camera_name": incident_instance.camera,
-                    "incident_time": incident_instance.created_at,
-                    "incident_id": incident_instance.id,
-                    "respondent_names": get_respondent_names(),
-                    "error_message": "Selected respondent does not exist."
-                })
+                logger.warning(
+                    f"Selected respondent '{selected_respondent}' does not exist."
+                )
+                return render(
+                    request,
+                    "resolve.html",
+                    {
+                        "incident_found": True,
+                        "resolved": False,
+                        "incident_type": incident_instance.incident_type,
+                        "image_url": (
+                            incident_instance.image.url
+                            if incident_instance.image
+                            else ""
+                        ),
+                        "camera_name": incident_instance.camera,
+                        "incident_time": incident_instance.created_at,
+                        "incident_id": incident_instance.id,
+                        "respondent_names": get_respondent_names(),
+                        "error_message": "Selected respondent does not exist.",
+                    },
+                )
 
             # Mark the incident as resolved
             incident_instance.resolved = True
@@ -393,15 +425,17 @@ def resolve(request, incident_id):
             # Call your lockdown release function if needed
             resolve_lockdown()
 
-            logger.info(f"Incident {incident_id} resolved by {selected_respondent_instance.name}.")
+            logger.info(
+                f"Incident {incident_id} resolved by {selected_respondent_instance.name}."
+            )
 
             # Optionally, add a success message using Django messages framework
             # messages.success(request, "Incident resolved successfully.")
 
-            return redirect('resolve', incident_id=incident_id)
+            return redirect("resolve", incident_id=incident_id)
         else:
             # Incident is already resolved; you might want to redirect or show a message
-            return redirect('resolve', incident_id=incident_id)
+            return redirect("resolve", incident_id=incident_id)
 
     # GET request
     # Example: retrieve respondents from an IncidentType (like "Trespassing")
@@ -415,7 +449,9 @@ def resolve(request, incident_id):
         respondent_names = []
 
     # If the incident is resolved, get the resolver's name
-    resolver_name = incident_instance.resolver.name if incident_instance.resolver else ""
+    resolver_name = (
+        incident_instance.resolver.name if incident_instance.resolver else ""
+    )
 
     context = {
         "incident_found": True,
@@ -431,6 +467,7 @@ def resolve(request, incident_id):
     # logger.info("Incident image URL: %s", context["image_url"])
     return render(request, "resolve.html", context)
 
+
 def get_respondent_names():
     """
     Helper function to retrieve respondent names.
@@ -442,79 +479,104 @@ def get_respondent_names():
         return [resp.name for resp in respondents]
     return []
 
+## Settings -> Respondents Page
+def respondents_page(request):
+    pop_up = request.GET.get("pop_up", "false").lower() == "true"
+    return render(request, "settings/respondents.html", {
+        "headers": ["ID", "Name", "Phone", "Email", "Active"],
+        "respondents": RespondentSerializer(Respondent.objects.all(), many=True).data,
+        "pop_up": pop_up,
+    })
+
+def add_respondent(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        phone = request.POST.get("phone")
+        email = request.POST.get("email")
+        active = request.POST.get("is_active") == "on"
+        respondent = Respondent.objects.create(name=name, phone=phone, email=email, is_active=active)
+
+        respondent.save()
+        
+    return redirect('respondents_page')
+
 @require_GET
 def incidents(request):
-    all_incidents = Incident.objects.all().order_by('-created_at')
+    all_incidents = Incident.objects.all().order_by("-created_at")
     return render(request, "incidents.html", {"incidents": all_incidents})
 
 
 @require_http_methods(["GET", "POST"])
 def camera_adjust(request):
     cameras = Camera.objects.all()
-    context = {'cameras': cameras}
-    
-    if request.method == 'POST':
-        if 'capture_snapshot' in request.POST:
+    context = {"cameras": cameras}
+
+    if request.method == "POST":
+        if "capture_snapshot" in request.POST:
             # Step 1 & 2: Capture Snapshot
-            camera_id = request.POST.get('camera_id')
+            camera_id = request.POST.get("camera_id")
             if not camera_id:
-                messages.error(request, 'Please select a camera.')
-                return redirect('camera_adjust')
-            
+                messages.error(request, "Please select a camera.")
+                return redirect("camera_adjust")
+
             try:
                 camera = Camera.objects.get(id=camera_id)
             except Camera.DoesNotExist:
-                messages.error(request, 'Selected camera does not exist.')
-                return redirect('camera_adjust')
-            
-            
+                messages.error(request, "Selected camera does not exist.")
+                return redirect("camera_adjust")
+
             frame = CameraManager._cameras[camera.name].frame
             # print(frame)
-            
+
             if frame is None:
-                messages.error(request, 'Failed to capture image from the camera. Is camera viewable in streams?')
-                return redirect('camera_adjust')
-            
+                messages.error(
+                    request,
+                    "Failed to capture image from the camera. Is camera viewable in streams?",
+                )
+                return redirect("camera_adjust")
+
             # Encode frame to JPEG
-            ret, buffer = cv2.imencode('.jpg', frame)
+            ret, buffer = cv2.imencode(".jpg", frame)
             if not ret:
-                messages.error(request, 'Failed to encode the captured image.')
-                return redirect('camera_adjust')
-            
+                messages.error(request, "Failed to encode the captured image.")
+                return redirect("camera_adjust")
+
             image_data = buffer.tobytes()
             image_name = f"camera_{camera.id}_snapshot.jpg"
-            image_path = os.path.join('snapshots', image_name)
-            
+            image_path = os.path.join("snapshots", image_name)
+
             # Save the image to MEDIA_ROOT/snapshots/
-            full_path = os.path.join(django_settings.MEDIA_ROOT, 'snapshots')
+            full_path = os.path.join(django_settings.MEDIA_ROOT, "snapshots")
             os.makedirs(full_path, exist_ok=True)  # Ensure the directory exists
             file_path = os.path.join(full_path, image_name)
-            with open(file_path, 'wb') as f:
+            with open(file_path, "wb") as f:
                 f.write(image_data)
-            
+
             # Pass the image URL to the template
-            context['selected_camera'] = camera
-            context['snapshot_url'] = os.path.join(django_settings.MEDIA_URL, 'snapshots', image_name)
-            return render(request, 'camera_adjust.html', context)
-        
-        elif 'save_coordinates' in request.POST:
+            context["selected_camera"] = camera
+            context["snapshot_url"] = os.path.join(
+                django_settings.MEDIA_URL, "snapshots", image_name
+            )
+            return render(request, "camera_adjust.html", context)
+
+        elif "save_coordinates" in request.POST:
             # Step 3: Save Coordinates
-            camera_id = request.POST.get('camera_id')
-            x1 = request.POST.get('x1')
-            y1 = request.POST.get('y1')
-            x2 = request.POST.get('x2')
-            y2 = request.POST.get('y2')
-            
+            camera_id = request.POST.get("camera_id")
+            x1 = request.POST.get("x1")
+            y1 = request.POST.get("y1")
+            x2 = request.POST.get("x2")
+            y2 = request.POST.get("y2")
+
             if not all([camera_id, x1, y1, x2, y2]):
-                messages.error(request, 'All coordinate fields are required.')
-                return redirect('camera_adjust')
-            
+                messages.error(request, "All coordinate fields are required.")
+                return redirect("camera_adjust")
+
             try:
                 camera = Camera.objects.get(id=camera_id)
             except Camera.DoesNotExist:
-                messages.error(request, 'Selected camera does not exist.')
-                return redirect('camera_adjust')
-            
+                messages.error(request, "Selected camera does not exist.")
+                return redirect("camera_adjust")
+
             # Validate and save coordinates
             try:
                 camera.x1 = float(x1)
@@ -522,13 +584,13 @@ def camera_adjust(request):
                 camera.x2 = float(x2)
                 camera.y2 = float(y2)
                 camera.save()
-                messages.success(request, 'Coordinates saved successfully.')
+                messages.success(request, "Coordinates saved successfully.")
             except ValueError:
-                messages.error(request, 'Invalid coordinate values.')
-            
-            return redirect('camera_adjust')
-    
-    return render(request, 'camera_adjust.html', context)
+                messages.error(request, "Invalid coordinate values.")
+
+            return redirect("camera_adjust")
+
+    return render(request, "camera_adjust.html", context)
 
 
 @require_http_methods(["GET"])
@@ -540,7 +602,7 @@ def single_stream_page(request, camera_name):
     camera = get_object_or_404(Camera, name=camera_name)
 
     context = {
-        'camera_name': camera.name,
+        "camera_name": camera.name,
     }
 
     return render(request, "single_stream.html", context)
