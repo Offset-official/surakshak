@@ -96,8 +96,6 @@ def enter_lockdown(camera_name, file_obj):
     respondents = IncidentType.objects.filter(type_name="Trespassing").first().respondents.all()
     for respondent in respondents:
         if respondent.is_active:
-            # print(respondent)   
-            # abhinav implement the function below
             send_all_notifs(incident_id=createdIncident.id, incident_type='Trespassing', phone=respondent.phone, email=respondent.email)
                 
 def resolve_lockdown():

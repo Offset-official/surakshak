@@ -1,8 +1,12 @@
 from django.core.mail import send_mail
 from django.urls import reverse
-import os 
+from twilio.rest import Client
+import os
 
-def send_email_notification(subject, body, recipients, from_email="no-reply@example.com", fail_silently=False):
+
+def send_email_notification(
+    subject, body, recipients, from_email="no-reply@example.com", fail_silently=False
+):
     """
     Sends an email notification using Django's send_mail utility.
 
@@ -14,16 +18,8 @@ def send_email_notification(subject, body, recipients, from_email="no-reply@exam
     """
     if not recipients:
         return  # No recipients, skip sending
-    send_mail(
-        subject,
-        body,
-        from_email,
-        recipients,
-        fail_silently=fail_silently
-    )
+    send_mail(subject, body, from_email, recipients, fail_silently=fail_silently)
 
-
-from twilio.rest import Client
 
 def send_sms_notification(client, body, phone_numbers, from_number="+1234567890"):
     """
@@ -34,16 +30,19 @@ def send_sms_notification(client, body, phone_numbers, from_number="+1234567890"
     :param phone_numbers: List of recipient phone numbers (strings)
     :param from_number: Your Twilio phone number (or valid sending number)
     """
-    if not phone_numbers:
-        return
     for to_number in phone_numbers:
         client.messages.create(
-            body=body,
-            from_=from_number,
-            to=to_number  # e.g., "+911234567890"
-        )   
+            body=body, from_=from_number, to=to_number  # e.g., "+911234567890"
+        )
 
-def send_whatsapp_notification(client, content_sid, content_variables, phone_numbers, from_whatsapp="whatsapp:+14155238886"):
+
+def send_whatsapp_notification(
+    client,
+    content_sid,
+    content_variables,
+    phone_numbers,
+    from_whatsapp="whatsapp:+14155238886",
+):
     """
     Sends WhatsApp notifications via Twilio.
 
@@ -53,14 +52,12 @@ def send_whatsapp_notification(client, content_sid, content_variables, phone_num
     :param phone_numbers: List of recipient WhatsApp phone numbers, e.g. ["whatsapp:+91XXXXXXXXXX"]
     :param from_whatsapp: Your Twilio WhatsApp sender number
     """
-    if not phone_numbers:
-        return
     for receiver in phone_numbers:
         client.messages.create(
             from_=from_whatsapp,
             content_sid=content_sid,
             content_variables=content_variables,
-            to=receiver
+            to=receiver,
         )
 
 
@@ -73,35 +70,9 @@ def send_call_notification(client, call_url, phone_numbers, from_number="+123456
     :param phone_numbers: List of phone numbers to call (e.g., ["+911234567890"])
     :param from_number: Your Twilio phone number
     """
-    if not phone_numbers:
-        return
     for receiver in phone_numbers:
-        client.calls.create(
-            from_=from_number,
-            to=receiver,
-            url=call_url
-        )
+        client.calls.create(from_=from_number, to=receiver, url=call_url)
 
-def send_all_notifs(phone, email, incident_id, incident_type):
-    """
-    NEED TO IMPLEMENT THIS!!!
-    """
+
+def send_all_notifs():
     pass
-    # url = reverse('resolve', args=[incident_id])
-    # main_text = f"Dear Surakshak,\n\nPlease check out the incident snippet and other information at {url} to resolve the alert as soon as possible.  \n\nRegards, \nInstitution"
-    # subject = f"Alert! Incident Type: {incident_type} Detected at {incident_type}"
-
-    # account_sid = os.getenv("TWILIO_ACCOUNT_SID")
-    # auth_token = os.getenv("TWILIO_AUTH_TOKEN")
-    # twilio_client = Client(account_sid, auth_token)
-    # send_sms_notification(
-    #     client=twilio_client,
-    #     body=main_text,
-    #     from_number="+12317666829",
-    #     phone_number=[phone]
-    # )
-    
-    # send_call_notification(
-    #     client=twilio_client,
-
-    # )

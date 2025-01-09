@@ -30,6 +30,13 @@ from surakshak.utils.logs import MyHandler
 from django.contrib import messages
 from surakshak.utils.camera_manager import CameraManager
 import cv2
+from surakshak.utils.notifs import (
+    send_call_notification,
+    send_email_notification,
+    send_sms_notification,
+    send_whatsapp_notification,
+)
+
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MyHandler())
@@ -137,78 +144,189 @@ def toggle_status(request):
         )
 
 
-def notify_api(
-    request,
-):  # TODO modularize this function and break it into smaller functions
-    if request.method == "POST":
+@require_http_methods(["POST"])
+def notify_api(request):
+    """
+    API endpoint to handle notification requests using utility functions.
+    """
+    try:
+        data = json.loads(request.body)
+
+        send_sms = data.get("send_sms", False)
+        send_call = data.get("send_call", False)
+        send_email = data.get("send_email", False)
+        send_whatsapp = data.get("send_whatsapp", False)
+
+        # Get the latest incident
         try:
-            print(f"Sending notifications...")
-            data = json.loads(request.body)
-            modes = data.get("modes", [])
-            incident_groups = data.get("incident_groups", [])
-            # empty means all groups
-
-            incident = Incident.objects.latest("created_at")  # get the latest incident
-
-            # Serialize the incident data
+            incident = Incident.objects.latest("created_at")
             incident_data = IncidentSerializer(incident).data
+        except Incident.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "error": "No incidents found"}, status=404
+            )
 
-            if not modes:
-                modes = ["email", "sms", "call", "whatsapp"]
-            if not incident_groups:
-                incident_groups = ["trespassing", "fire", "idk"]
+        # Get respondents
+        incident_groups = data.get("incident_groups", [])
+        if incident_groups:
+            respondents = Respondent.objects.filter(groups__name__in=incident_groups)
+        else:
+            respondents = Respondent.objects.all()
 
-            # TODO get all the respondents from the given groups
+        respondents_data = RespondentSerializer(respondents, many=True).data
 
-            Respondents = RespondentSerializer(Respondent.objects.all(), many=True).data
-            sample_url = "https://www.incident_page.com"
-            main_text = f"Dear Surakshak,\n\nPlease check out the incident snippet and other information at {sample_url} to resolve the alert as soon as possible.  \n\nRegards, \nInstitution"
-            subject = f"Alert! Incident Type: {incident_data['incident_type']} Detected at {incident_data['camera']}"
-            phnumbers = [respondent["phone"] for respondent in Respondents]
-            account_sid = os.getenv("WHATSAPP_ACCOUNT_SID")
-            auth_token = os.getenv("WHATSAPP_AUTH_TOKEN")
+        # Prepare notification content
+        sample_url = "https://www.incident_page.com"  # You might want to generate this dynamically
+        main_text = (
+            f"Dear Surakshak,\n\n"
+            f"Please check out the incident snippet and other information at {sample_url} "
+            f"to resolve the alert as soon as possible.\n\n"
+            f"Regards,\nInstitution"
+        )
+        subject = f"Alert! Incident Type: {incident_data['incident_type']} Detected at {incident_data['camera']}"
 
-            client = Client(account_sid, auth_token)
-            phnumbers = ["7014206208"]
-            if "sms" in modes:
-                for receiver_number in phnumbers:
-                    message = client.messages.create(
-                        from_="+12317666829",
-                        body="Alert! Incident Type: Trespassing Detected at  Camera 1",
-                        to=f"+91{receiver_number}",
-                    )
+        # Initialize Twilio client if needed
+        twilio_client = None
+        if any([send_sms, send_call, send_whatsapp]):
+            account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+            auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+            twilio_client = Client(account_sid, auth_token)
 
-            if "whatsapp" in modes:
-                for receiver_number in phnumbers:
-                    message = client.messages.create(
-                        from_="whatsapp:+14155238886",
-                        content_sid="HXb5b62575e6e4ff6129ad7c8efe1f983e",
-                        content_variables='{"1":"12/1","2":"3pm"}',
-                        to=f"whatsapp:+91{receiver_number}",
-                    )
+        notification_results = {"sms": [], "call": [], "whatsapp": [], "email": []}
 
-            if "call" in modes:
+        # Group recipients by notification type
+        phone_numbers = [f"+91{r['phone']}" for r in respondents_data if r.get("phone")]
+        email_addresses = [r["email"] for r in respondents_data if r.get("email")]
+        whatsapp_numbers = [
+            f"whatsapp:+91{r['phone']}" for r in respondents_data if r.get("phone")
+        ]
+
+        # Send Email Notifications
+        if send_email and email_addresses:
+            try:
+                send_email_notification(
+                    subject=subject,
+                    body=main_text,
+                    recipients=email_addresses,
+                    from_email="abhinavkun26@gmail.com",
+                )
+                notification_results["email"].extend(
+                    [{"email": email, "status": "success"} for email in email_addresses]
+                )
+            except Exception as e:
+                notification_results["email"].extend(
+                    [
+                        {"email": email, "status": "failed", "error": str(e)}
+                        for email in email_addresses
+                    ]
+                )
+
+        # Send SMS Notifications
+        if send_sms and phone_numbers:
+            try:
+                send_sms_notification(
+                    client=twilio_client,
+                    body=subject,
+                    phone_numbers=phone_numbers,
+                    from_number="+12317666829",
+                )
+                notification_results["sms"].extend(
+                    [{"phone": phone, "status": "success"} for phone in phone_numbers]
+                )
+            except Exception as e:
+                notification_results["sms"].extend(
+                    [
+                        {"phone": phone, "status": "failed", "error": str(e)}
+                        for phone in phone_numbers
+                    ]
+                )
+
+        # Send WhatsApp Notifications
+        if send_whatsapp and whatsapp_numbers:
+            try:
+                send_whatsapp_notification(
+                    client=twilio_client,
+                    content_sid="HXb5b62575e6e4ff6129ad7c8efe1f983e",
+                    content_variables='{"1":"12/1","2":"3pm"}',
+                    phone_numbers=whatsapp_numbers,
+                    from_whatsapp="whatsapp:+14155238886",
+                )
+                notification_results["whatsapp"].extend(
+                    [
+                        {"phone": phone, "status": "success"}
+                        for phone in whatsapp_numbers
+                    ]
+                )
+            except Exception as e:
+                notification_results["whatsapp"].extend(
+                    [
+                        {"phone": phone, "status": "failed", "error": str(e)}
+                        for phone in whatsapp_numbers
+                    ]
+                )
+
+        # Send Call Notifications
+        if send_call and phone_numbers:
+            try:
                 url = os.getenv("TwiML_BIN_URL")
-                voice_url = static("voice.xml")
-                for receiver_number in phnumbers:
-                    call = client.calls.create(
-                        from_="+12317666829",
-                        to=f"+91{receiver_number}",
-                        url={url},
-                    )
+                send_call_notification(
+                    client=twilio_client,
+                    call_url=url,
+                    phone_numbers=phone_numbers,
+                    from_number="+12317666829",
+                )
+                notification_results["call"].extend(
+                    [{"phone": phone, "status": "success"} for phone in phone_numbers]
+                )
+            except Exception as e:
+                notification_results["call"].extend(
+                    [
+                        {"phone": phone, "status": "failed", "error": str(e)}
+                        for phone in phone_numbers
+                    ]
+                )
 
-            print("Notifications sent successfully!")
+        all_notifications = sum(
+            len(results) for results in notification_results.values()
+        )
+        failed_notifications = sum(
+            len([r for r in results if r["status"] == "failed"])
+            for results in notification_results.values()
+        )
+
+        if failed_notifications == 0:
             return JsonResponse(
                 {
                     "success": True,
-                    "message": "Notifications sent successfully",
+                    "message": "All notifications sent successfully",
+                    "results": notification_results,
                 }
             )
-        except Exception as e:
-            return JsonResponse({"success": False, "error": str(e)}, status=500)
-    return JsonResponse(
-        {"success": False, "error": "Invalid request method"}, status=405
-    )
+        elif failed_notifications < all_notifications:
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Some notifications were sent successfully",
+                    "results": notification_results,
+                },
+                status=207,
+            )
+        else:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "All notifications failed",
+                    "results": notification_results,
+                },
+                status=500,
+            )
+
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"success": False, "error": "Invalid JSON data"}, status=400
+        )
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
 def timings_page(request):
