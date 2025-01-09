@@ -9,7 +9,12 @@ from .models import Camera, Incident, Respondent
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.core.mail import send_mail
-from .serializers import IncidentSerializer, RespondentSerializer, IncidentTypeSerializer, CameraSerializer
+from .serializers import (
+    IncidentSerializer,
+    RespondentSerializer,
+    IncidentTypeSerializer,
+    CameraSerializer,
+)
 from twilio.rest import Client
 import os
 from dotenv import load_dotenv
@@ -30,26 +35,37 @@ import cv2
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from surakshak.utils.notifs import (
+    send_call_notification,
+    send_email_notification,
+    send_sms_notification,
+    send_whatsapp_notification,
+)
+
 
 logger = logging.getLogger(__name__)
 logger.addHandler(MyHandler())
 
 
 def login_page(request):
-    next_url = request.GET.get('next', 'homepage')  # Default to 'homepage' if 'next' isn't present
+    next_url = request.GET.get(
+        "next", "homepage"
+    )  # Default to 'homepage' if 'next' isn't present
     return render(request, "auth_page.html", {"next": next_url})
 
-def login(request): 
-    username = request.POST.get('username')
-    password = request.POST.get('password')
+
+def login(request):
+    username = request.POST.get("username")
+    password = request.POST.get("password")
     user = authenticate(request, username=username, password=password)
-    next_url = request.POST.get('next', 'homepage')
+    next_url = request.POST.get("next", "homepage")
 
     if user is not None:
         auth_login(request, user)
         return redirect(next_url)
     else:
         return render(request, "auth_page.html", {"error": "Invalid credentials"})
+
 
 def homepage(request):
     if not request.user.is_authenticated:
@@ -64,20 +80,25 @@ def heartbeat(request):
     Expected response format: {'success': True, 'status': 'ACTIVE'/'INACTIVE', 'lockdown': True/False}
     """
     try:
-        status = SystemConfig.instrusion_state
-        ld = SystemConfig.lockdown
-        logger.debug(f"Heartbeat check: {status}, Lockdown: {ld}")
-        incident_id = SystemConfig.incident_id
+        # status = SystemConfig.instrusion_state
+        # ld = SystemConfig.lockdown
+        # logger.debug(f"Heartbeat check: {status}, Lockdown: {ld}")
+        # incident_id = SystemConfig.incident_id
         return JsonResponse(
             {
                 "success": True,
-                "status": status,
-                "lockdown": ld,
-                "incident_id": incident_id,
+                "status": 0,
+                "lockdown": False,
+                "incident_id": 1,
             }
         )
         # return JsonResponse(
-        #     {"success": True, "status": 1, "lockdown": False, "incident_id": 2}
+        #     {
+        #         "success": True,
+        #         "status": status,
+        #         "lockdown": ld,
+        #         "incident_id": incident_id,
+        #     }
         # )
     except Exception as e:
         # logger.error(f"Heartbeat error: {e}")
@@ -137,12 +158,12 @@ def logs_page(request):
         return redirect(f"{reverse('login_page')}?next=logs_page")
     return render(request, "logs.html", {"logs": logs})
 
+
 def settings_page(request):
-    active_tab = request.GET.get('tab', 'respondents')  # Default to 'respondents'
+    active_tab = request.GET.get("tab", "respondents")  # Default to 'respondents'
     if not request.user.is_authenticated:
         return redirect(f"{reverse('login_page')}?next=settings")
     return render(request, "settings.html", {"active_tab": active_tab})
-
 
 
 @require_POST
@@ -166,78 +187,189 @@ def toggle_status(request):
         )
 
 
-def notify_api(
-    request,
-):  # TODO modularize this function and break it into smaller functions
-    if request.method == "POST":
+@require_http_methods(["POST"])
+def notify_api(request):
+    """
+    API endpoint to handle notification requests using utility functions.
+    """
+    try:
+        data = json.loads(request.body)
+
+        send_sms = data.get("send_sms", False)
+        send_call = data.get("send_call", False)
+        send_email = data.get("send_email", False)
+        send_whatsapp = data.get("send_whatsapp", False)
+
+        # Get the latest incident
         try:
-            print(f"Sending notifications...")
-            data = json.loads(request.body)
-            modes = data.get("modes", [])
-            incident_groups = data.get("incident_groups", [])
-            # empty means all groups
-
-            incident = Incident.objects.latest("created_at")  # get the latest incident
-
-            # Serialize the incident data
+            incident = Incident.objects.latest("created_at")
             incident_data = IncidentSerializer(incident).data
+        except Incident.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "error": "No incidents found"}, status=404
+            )
 
-            if not modes:
-                modes = ["email", "sms", "call", "whatsapp"]
-            if not incident_groups:
-                incident_groups = ["trespassing", "fire", "idk"]
+        # Get respondents
+        incident_groups = data.get("incident_groups", [])
+        if incident_groups:
+            respondents = Respondent.objects.filter(groups__name__in=incident_groups)
+        else:
+            respondents = Respondent.objects.all()
 
-            # TODO get all the respondents from the given groups
+        respondents_data = RespondentSerializer(respondents, many=True).data
 
-            Respondents = RespondentSerializer(Respondent.objects.all(), many=True).data
-            sample_url = "https://www.incident_page.com"
-            main_text = f"Dear Surakshak,\n\nPlease check out the incident snippet and other information at {sample_url} to resolve the alert as soon as possible.  \n\nRegards, \nInstitution"
-            subject = f"Alert! Incident Type: {incident_data['incident_type']} Detected at {incident_data['camera']}"
-            phnumbers = [respondent["phone"] for respondent in Respondents]
-            account_sid = os.getenv("WHATSAPP_ACCOUNT_SID")
-            auth_token = os.getenv("WHATSAPP_AUTH_TOKEN")
+        # Prepare notification content
+        sample_url = "https://www.incident_page.com"  # You might want to generate this dynamically
+        main_text = (
+            f"Dear Surakshak,\n\n"
+            f"Please check out the incident snippet and other information at {sample_url} "
+            f"to resolve the alert as soon as possible.\n\n"
+            f"Regards,\nInstitution"
+        )
+        subject = f"Alert! Incident Type: {incident_data['incident_type']} Detected at {incident_data['camera']}"
 
-            client = Client(account_sid, auth_token)
-            phnumbers = ["7014206208"]
-            if "sms" in modes:
-                for receiver_number in phnumbers:
-                    message = client.messages.create(
-                        from_="+12317666829",
-                        body="Alert! Incident Type: Trespassing Detected at  Camera 1",
-                        to=f"+91{receiver_number}",
-                    )
+        # Initialize Twilio client if needed
+        twilio_client = None
+        if any([send_sms, send_call, send_whatsapp]):
+            account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+            auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+            twilio_client = Client(account_sid, auth_token)
 
-            if "whatsapp" in modes:
-                for receiver_number in phnumbers:
-                    message = client.messages.create(
-                        from_="whatsapp:+14155238886",
-                        content_sid="HXb5b62575e6e4ff6129ad7c8efe1f983e",
-                        content_variables='{"1":"12/1","2":"3pm"}',
-                        to=f"whatsapp:+91{receiver_number}",
-                    )
+        notification_results = {"sms": [], "call": [], "whatsapp": [], "email": []}
 
-            if "call" in modes:
+        # Group recipients by notification type
+        phone_numbers = [f"+91{r['phone']}" for r in respondents_data if r.get("phone")]
+        email_addresses = [r["email"] for r in respondents_data if r.get("email")]
+        whatsapp_numbers = [
+            f"whatsapp:+91{r['phone']}" for r in respondents_data if r.get("phone")
+        ]
+
+        # Send Email Notifications
+        if send_email and email_addresses:
+            try:
+                send_email_notification(
+                    subject=subject,
+                    body=main_text,
+                    recipients=email_addresses,
+                    from_email="abhinavkun26@gmail.com",
+                )
+                notification_results["email"].extend(
+                    [{"email": email, "status": "success"} for email in email_addresses]
+                )
+            except Exception as e:
+                notification_results["email"].extend(
+                    [
+                        {"email": email, "status": "failed", "error": str(e)}
+                        for email in email_addresses
+                    ]
+                )
+
+        # Send SMS Notifications
+        if send_sms and phone_numbers:
+            try:
+                send_sms_notification(
+                    client=twilio_client,
+                    body=subject,
+                    phone_numbers=phone_numbers,
+                    from_number="+12317666829",
+                )
+                notification_results["sms"].extend(
+                    [{"phone": phone, "status": "success"} for phone in phone_numbers]
+                )
+            except Exception as e:
+                notification_results["sms"].extend(
+                    [
+                        {"phone": phone, "status": "failed", "error": str(e)}
+                        for phone in phone_numbers
+                    ]
+                )
+
+        # Send WhatsApp Notifications
+        if send_whatsapp and whatsapp_numbers:
+            try:
+                send_whatsapp_notification(
+                    client=twilio_client,
+                    content_sid="HXb5b62575e6e4ff6129ad7c8efe1f983e",
+                    content_variables='{"1":"12/1","2":"3pm"}',
+                    phone_numbers=whatsapp_numbers,
+                    from_whatsapp="whatsapp:+14155238886",
+                )
+                notification_results["whatsapp"].extend(
+                    [
+                        {"phone": phone, "status": "success"}
+                        for phone in whatsapp_numbers
+                    ]
+                )
+            except Exception as e:
+                notification_results["whatsapp"].extend(
+                    [
+                        {"phone": phone, "status": "failed", "error": str(e)}
+                        for phone in whatsapp_numbers
+                    ]
+                )
+
+        # Send Call Notifications
+        if send_call and phone_numbers:
+            try:
                 url = os.getenv("TwiML_BIN_URL")
-                voice_url = static("voice.xml")
-                for receiver_number in phnumbers:
-                    call = client.calls.create(
-                        from_="+12317666829",
-                        to=f"+91{receiver_number}",
-                        url={url},
-                    )
+                send_call_notification(
+                    client=twilio_client,
+                    call_url=url,
+                    phone_numbers=phone_numbers,
+                    from_number="+12317666829",
+                )
+                notification_results["call"].extend(
+                    [{"phone": phone, "status": "success"} for phone in phone_numbers]
+                )
+            except Exception as e:
+                notification_results["call"].extend(
+                    [
+                        {"phone": phone, "status": "failed", "error": str(e)}
+                        for phone in phone_numbers
+                    ]
+                )
 
-            print("Notifications sent successfully!")
+        all_notifications = sum(
+            len(results) for results in notification_results.values()
+        )
+        failed_notifications = sum(
+            len([r for r in results if r["status"] == "failed"])
+            for results in notification_results.values()
+        )
+
+        if failed_notifications == 0:
             return JsonResponse(
                 {
                     "success": True,
-                    "message": "Notifications sent successfully",
+                    "message": "All notifications sent successfully",
+                    "results": notification_results,
                 }
             )
-        except Exception as e:
-            return JsonResponse({"success": False, "error": str(e)}, status=500)
-    return JsonResponse(
-        {"success": False, "error": "Invalid request method"}, status=405
-    )
+        elif failed_notifications < all_notifications:
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Some notifications were sent successfully",
+                    "results": notification_results,
+                },
+                status=207,
+            )
+        else:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "All notifications failed",
+                    "results": notification_results,
+                },
+                status=500,
+            )
+
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"success": False, "error": "Invalid JSON data"}, status=400
+        )
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
 def timings_page(request):
@@ -270,22 +402,28 @@ def timings_page(request):
         form = InferenceScheduleForm(instance=schedule)
         # render the form
         if not request.user.is_authenticated:
-            return redirect(f"{reverse('login_page')}?next=timings")   
+            return redirect(f"{reverse('login_page')}?next=timings")
         return render(request, "timings.html", {"form": form})
-    
+
     inferenceSchedule = form.objects.get(pk=1)
 
     return render(request, "timings.html")
+
 
 def camera_page(request):
     if not request.user.is_authenticated:
         return redirect(f"{reverse('login_page')}?next=camera_page")
     pop_up = request.GET.get("pop_up", "false").lower() == "true"
-    return render(request, "settings/camera_mod.html", {
-        "headers": ["ID", "Name", "Location", "RTSP-URL"],
-        "respondents": CameraSerializer(Camera.objects.all(), many=True).data,
-        "pop_up": pop_up,
-    })
+    return render(
+        request,
+        "settings/camera_mod.html",
+        {
+            "headers": ["ID", "Name", "Location", "RTSP-URL"],
+            "respondents": CameraSerializer(Camera.objects.all(), many=True).data,
+            "pop_up": pop_up,
+        },
+    )
+
 
 def add_camera(request):
     if request.method == "POST":
@@ -295,19 +433,27 @@ def add_camera(request):
         camera = Camera.objects.create(name=name, location=location, rtsp_url=rtsp_url)
 
         camera.save()
-        
-    return redirect('camera_page')
+
+    return redirect("camera_page")
+
 
 ## Settings -> Respondents Page
 def respondents_page(request):
     if not request.user.is_authenticated:
         return redirect(f"{reverse('login_page')}?next=respondents_page")
     pop_up = request.GET.get("pop_up", "false").lower() == "true"
-    return render(request, "settings/respondents.html", {
-        "headers": ["ID", "Name", "Phone", "Email", "Active"],
-        "respondents": RespondentSerializer(Respondent.objects.all(), many=True).data,
-        "pop_up": pop_up,
-    })
+    return render(
+        request,
+        "settings/respondents.html",
+        {
+            "headers": ["ID", "Name", "Phone", "Email", "Active"],
+            "respondents": RespondentSerializer(
+                Respondent.objects.all(), many=True
+            ).data,
+            "pop_up": pop_up,
+        },
+    )
+
 
 def add_respondent(request):
     if request.method == "POST":
@@ -315,11 +461,14 @@ def add_respondent(request):
         phone = request.POST.get("phone")
         email = request.POST.get("email")
         active = request.POST.get("is_active") == "on"
-        respondent = Respondent.objects.create(name=name, phone=phone, email=email, is_active=active)
+        respondent = Respondent.objects.create(
+            name=name, phone=phone, email=email, is_active=active
+        )
 
         respondent.save()
-        
-    return redirect('respondents_page')
+
+    return redirect("respondents_page")
+
 
 ## Settings -> Incidents Mapping Page
 def incidents_mapping_page(request):
@@ -329,31 +478,46 @@ def incidents_mapping_page(request):
     serialized_incidents = IncidentTypeSerializer(incident_types, many=True).data
 
     ## Filtering for tresspassing
-    tresspassing_ids = (IncidentType.objects.filter(type_name="Tresspassing").values_list('id', flat=True))
+    tresspassing_ids = IncidentType.objects.filter(
+        type_name="Tresspassing"
+    ).values_list("id", flat=True)
 
-    tress_avail_respondents = Respondent.objects.exclude(incident_types__in=tresspassing_ids)
-    tress_avail_serialized = RespondentSerializer(tress_avail_respondents, many=True).data
+    tress_avail_respondents = Respondent.objects.exclude(
+        incident_types__in=tresspassing_ids
+    )
+    tress_avail_serialized = RespondentSerializer(
+        tress_avail_respondents, many=True
+    ).data
 
     ## Filtering for fire
-    fire_ids = (IncidentType.objects.filter(type_name="Fire").values_list('id', flat=True))
+    fire_ids = IncidentType.objects.filter(type_name="Fire").values_list(
+        "id", flat=True
+    )
     fire_avail_respondents = Respondent.objects.exclude(incident_types__in=fire_ids)
     fire_avail_serialized = RespondentSerializer(fire_avail_respondents, many=True).data
 
     if not request.user.is_authenticated:
         return redirect(f"{reverse('login_page')}?next=incidents_mapping_page")
 
-    return render(request, "settings/incidents_map.html", {
-        "incident_mappings": serialized_incidents,
-        "available_tress_respondents": tress_avail_serialized,
-        "available_fire_respondents": fire_avail_serialized,
-        "pop_up": pop_up,
-        "incident_type": incident_type
-    })
+    return render(
+        request,
+        "settings/incidents_map.html",
+        {
+            "incident_mappings": serialized_incidents,
+            "available_tress_respondents": tress_avail_serialized,
+            "available_fire_respondents": fire_avail_serialized,
+            "pop_up": pop_up,
+            "incident_type": incident_type,
+        },
+    )
+
 
 def assign_respondent(request):
     if request.method == "POST":
         type_name = request.POST.get("incident_type")
-        selected_respondents = request.POST.getlist("selected_respondents")  # Retrieve selected IDs
+        selected_respondents = request.POST.getlist(
+            "selected_respondents"
+        )  # Retrieve selected IDs
 
         for respondent in selected_respondents:
             name = respondent
@@ -361,19 +525,26 @@ def assign_respondent(request):
             try:
                 respondent = Respondent.objects.get(name=name)
             except Respondent.DoesNotExist:
-                return JsonResponse({"success": False, "error": "Respondent does not exist"}, status=400)
+                return JsonResponse(
+                    {"success": False, "error": "Respondent does not exist"}, status=400
+                )
 
             # Check if the incident type exists
-            incident_type, created = IncidentType.objects.get_or_create(type_name=type_name)
+            incident_type, created = IncidentType.objects.get_or_create(
+                type_name=type_name
+            )
 
             # Check if the respondent is already assigned
             if incident_type.respondents.filter(id=respondent.id).exists():
-                return JsonResponse({"success": False, "error": "Respondent already assigned"}, status=400)
+                return JsonResponse(
+                    {"success": False, "error": "Respondent already assigned"},
+                    status=400,
+                )
 
             # Add the respondent to the incident type
             incident_type.respondents.add(respondent)
 
-    return redirect('incidents_mapping_page')
+    return redirect("incidents_mapping_page")
 
 
 @require_http_methods(["GET", "POST"])
@@ -517,30 +688,10 @@ def get_respondent_names():
         return [resp.name for resp in respondents]
     return []
 
-## Settings -> Respondents Page
-def respondents_page(request):
-    pop_up = request.GET.get("pop_up", "false").lower() == "true"
-    return render(request, "settings/respondents.html", {
-        "headers": ["ID", "Name", "Phone", "Email", "Active"],
-        "respondents": RespondentSerializer(Respondent.objects.all(), many=True).data,
-        "pop_up": pop_up,
-    })
-
-def add_respondent(request):
-    if request.method == "POST":
-        name = request.POST.get("name")
-        phone = request.POST.get("phone")
-        email = request.POST.get("email")
-        active = request.POST.get("is_active") == "on"
-        respondent = Respondent.objects.create(name=name, phone=phone, email=email, is_active=active)
-
-        respondent.save()
-        
-    return redirect('respondents_page')
 
 @require_GET
 def incidents(request):
-    all_incidents = Incident.objects.all().order_by('-created_at')
+    all_incidents = Incident.objects.all().order_by("-created_at")
     if not request.user.is_authenticated:
         return redirect(f"{reverse('login_page')}?next=incidents")
     return render(request, "incidents.html", {"incidents": all_incidents})
@@ -558,35 +709,37 @@ def camera_adjust(request):
             if not camera_id:
                 if not request.user.is_authenticated:
                     return redirect(f"{reverse('login_page')}?next=camera_adjust")
-                messages.error(request, 'Please select a camera.')
-                return redirect('camera_adjust')
-            
+                messages.error(request, "Please select a camera.")
+                return redirect("camera_adjust")
+
             try:
                 camera = Camera.objects.get(id=camera_id)
             except Camera.DoesNotExist:
                 if not request.user.is_authenticated:
                     return redirect(f"{reverse('login_page')}?next=camera_adjust")
-                messages.error(request, 'Selected camera does not exist.')
-                return redirect('camera_adjust')
-            
-            
+                messages.error(request, "Selected camera does not exist.")
+                return redirect("camera_adjust")
+
             frame = CameraManager._cameras[camera.name].frame
             # print(frame)
 
             if frame is None:
                 if not request.user.is_authenticated:
                     return redirect(f"{reverse('login_page')}?next=camera_adjust")
-                messages.error(request, 'Failed to capture image from the camera. Is camera viewable in streams?')
-                return redirect('camera_adjust')
-            
+                messages.error(
+                    request,
+                    "Failed to capture image from the camera. Is camera viewable in streams?",
+                )
+                return redirect("camera_adjust")
+
             # Encode frame to JPEG
             ret, buffer = cv2.imencode(".jpg", frame)
             if not ret:
                 if not request.user.is_authenticated:
                     return redirect(f"{reverse('login_page')}?next=camera_adjust")
-                messages.error(request, 'Failed to encode the captured image.')
-                return redirect('camera_adjust')
-            
+                messages.error(request, "Failed to encode the captured image.")
+                return redirect("camera_adjust")
+
             image_data = buffer.tobytes()
             image_name = f"camera_{camera.id}_snapshot.jpg"
             image_path = os.path.join("snapshots", image_name)
@@ -599,13 +752,15 @@ def camera_adjust(request):
                 f.write(image_data)
 
             # Pass the image URL to the template
-            context['selected_camera'] = camera
-            context['snapshot_url'] = os.path.join(django_settings.MEDIA_URL, 'snapshots', image_name)
+            context["selected_camera"] = camera
+            context["snapshot_url"] = os.path.join(
+                django_settings.MEDIA_URL, "snapshots", image_name
+            )
             if not request.user.is_authenticated:
                 return redirect(f"{reverse('login_page')}?next=camera_adjust")
-            return render(request, 'camera_adjust.html', context)
-        
-        elif 'save_coordinates' in request.POST:
+            return render(request, "camera_adjust.html", context)
+
+        elif "save_coordinates" in request.POST:
             # Step 3: Save Coordinates
             camera_id = request.POST.get("camera_id")
             x1 = request.POST.get("x1")
@@ -616,17 +771,17 @@ def camera_adjust(request):
             if not all([camera_id, x1, y1, x2, y2]):
                 if not request.user.is_authenticated:
                     return redirect(f"{reverse('login_page')}?next=camera_adjust")
-                messages.error(request, 'All coordinate fields are required.')
-                return redirect('camera_adjust')
-            
+                messages.error(request, "All coordinate fields are required.")
+                return redirect("camera_adjust")
+
             try:
                 camera = Camera.objects.get(id=camera_id)
             except Camera.DoesNotExist:
                 if not request.user.is_authenticated:
                     return redirect(f"{reverse('login_page')}?next=camera_adjust")
-                messages.error(request, 'Selected camera does not exist.')
-                return redirect('camera_adjust')
-            
+                messages.error(request, "Selected camera does not exist.")
+                return redirect("camera_adjust")
+
             # Validate and save coordinates
             try:
                 camera.x1 = float(x1)
@@ -636,13 +791,13 @@ def camera_adjust(request):
                 camera.save()
                 messages.success(request, "Coordinates saved successfully.")
             except ValueError:
-                messages.error(request, 'Invalid coordinate values.')
+                messages.error(request, "Invalid coordinate values.")
             if not request.user.is_authenticated:
                 return redirect(f"{reverse('login_page')}?next=camera_adjust")
-            return redirect('camera_adjust')
+            return redirect("camera_adjust")
     if not request.user.is_authenticated:
         return redirect(f"{reverse('login_page')}?next=camera_adjust")
-    return render(request, 'camera_adjust.html', context)
+    return render(request, "camera_adjust.html", context)
 
 
 @require_http_methods(["GET"])
