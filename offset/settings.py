@@ -55,7 +55,7 @@ NPM_BIN_PATH = os.getenv("NPM_BIN_PATH")
 
 #     if not NPM_BIN_PATH:
 #         raise FileNotFoundError("NPM binary not found. Please update the paths.")
-NPM_BIN_PATH = r"/home/jalan/.nvm/versions/node/v22.12.0/bin/npm"
+NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
 
 
 # Application definition

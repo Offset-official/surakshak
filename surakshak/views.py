@@ -48,9 +48,7 @@ logger.addHandler(MyHandler())
 
 
 def login_page(request):
-    next_url = request.GET.get(
-        "next", "homepage"
-    )
+    next_url = request.GET.get("next", "homepage")
     if request.user.is_authenticated:
         return render(request, "homepage.html")
     return render(request, "auth_page.html", {"next": next_url})
@@ -86,14 +84,7 @@ def heartbeat(request):
         ld = SystemConfig.lockdown
         logger.debug(f"Heartbeat check: {status}, Lockdown: {ld}")
         incident_id = SystemConfig.incident_id
-        # return JsonResponse(
-        #     {
-        #         "success": True,
-        #         "status": 0,
-        #         "lockdown": False,
-        #         "incident_id": 1,
-        #     }
-        # )
+
         return JsonResponse(
             {
                 "success": True,
@@ -191,7 +182,7 @@ def toggle_status(request):
 
 def notify_api(
     request,
-):  # TODO modularize this function and break it into smaller functions
+):
     if request.method == "POST":
         try:
             print(f"Sending notifications...")
@@ -591,7 +582,7 @@ def incidents(request):
 def adjust_camera(request, camera_name=None):
     """
     Adjust settings for a specific camera without needing to select from a dropdown.
-    
+
     URL pattern example:
       path("adjust_camera/<str:camera_name>/", views.adjust_camera, name="adjust_camera")
 
@@ -603,7 +594,7 @@ def adjust_camera(request, camera_name=None):
         HttpResponse: Rendered template with context or redirect on actions.
     """
     # If no camera name is supplied, you can decide what to do:
-    # - show an error, or 
+    # - show an error, or
     # - redirect to a page explaining no camera was selected, etc.
     if not camera_name:
         messages.error(request, "No camera name specified.")
@@ -626,7 +617,7 @@ def adjust_camera(request, camera_name=None):
             if frame is None:
                 messages.error(
                     request,
-                    "Failed to capture image from the camera. Is the camera streaming?"
+                    "Failed to capture image from the camera. Is the camera streaming?",
                 )
                 return redirect("adjust_camera", camera_name=camera_name)
 
@@ -677,6 +668,8 @@ def adjust_camera(request, camera_name=None):
             return redirect("adjust_camera", camera_name=camera_name)
 
     return render(request, "camera_adjust.html", context)
+
+
 @require_http_methods(["GET"])
 def single_stream_page(request, camera_name):
     """
