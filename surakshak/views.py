@@ -58,9 +58,6 @@ def heartbeat(request):
                 "incident_id": incident_id,
             }
         )
-        # return JsonResponse(
-        #     {"success": True, "status": 1, "lockdown": False, "incident_id": 2}
-        # )
     except Exception as e:
         # logger.error(f"Heartbeat error: {e}")
         return JsonResponse(
@@ -115,9 +112,8 @@ def logs_page(request):
 
 
 def settings_page(request):
-    active_tab = request.GET.get('tab', 'respondents')  # Default to 'respondents'
+    active_tab = request.GET.get("tab", "respondents")  # Default to 'respondents'
     return render(request, "settings.html", {"active_tab": active_tab})
-
 
 
 @require_POST
@@ -250,17 +246,26 @@ def timings_page(request):
 
     return render(request, "timings.html")
 
+
 def camera_page(request):
     return render(request, "settings/camera_mod.html")
+
 
 ## Settings -> Respondents Page
 def respondents_page(request):
     pop_up = request.GET.get("pop_up", "false").lower() == "true"
-    return render(request, "settings/respondents.html", {
-        "headers": ["ID", "Name", "Phone", "Email", "Active"],
-        "respondents": RespondentSerializer(Respondent.objects.all(), many=True).data,
-        "pop_up": pop_up,
-    })
+    return render(
+        request,
+        "settings/respondents.html",
+        {
+            "headers": ["ID", "Name", "Phone", "Email", "Active"],
+            "respondents": RespondentSerializer(
+                Respondent.objects.all(), many=True
+            ).data,
+            "pop_up": pop_up,
+        },
+    )
+
 
 def add_respondent(request):
     if request.method == "POST":
@@ -268,11 +273,14 @@ def add_respondent(request):
         phone = request.POST.get("phone")
         email = request.POST.get("email")
         active = request.POST.get("is_active") == "on"
-        respondent = Respondent.objects.create(name=name, phone=phone, email=email, is_active=active)
+        respondent = Respondent.objects.create(
+            name=name, phone=phone, email=email, is_active=active
+        )
 
         respondent.save()
-        
-    return redirect('respondents_page')
+
+    return redirect("respondents_page")
+
 
 ## Settings -> Incidents Mapping Page
 def incidents_mapping_page(request):
@@ -282,29 +290,44 @@ def incidents_mapping_page(request):
     serialized_incidents = IncidentTypeSerializer(incident_types, many=True).data
 
     ## Filtering for tresspassing
-    tresspassing_ids = (IncidentType.objects.filter(type_name="Tresspassing").values_list('id', flat=True))
+    tresspassing_ids = IncidentType.objects.filter(
+        type_name="Tresspassing"
+    ).values_list("id", flat=True)
 
-    tress_avail_respondents = Respondent.objects.exclude(incident_types__in=tresspassing_ids)
-    tress_avail_serialized = RespondentSerializer(tress_avail_respondents, many=True).data
+    tress_avail_respondents = Respondent.objects.exclude(
+        incident_types__in=tresspassing_ids
+    )
+    tress_avail_serialized = RespondentSerializer(
+        tress_avail_respondents, many=True
+    ).data
 
     ## Filtering for fire
-    fire_ids = (IncidentType.objects.filter(type_name="Fire").values_list('id', flat=True))
+    fire_ids = IncidentType.objects.filter(type_name="Fire").values_list(
+        "id", flat=True
+    )
 
     fire_avail_respondents = Respondent.objects.exclude(incident_types__in=fire_ids)
     fire_avail_serialized = RespondentSerializer(fire_avail_respondents, many=True).data
 
-    return render(request, "settings/incidents_map.html", {
-        "incident_mappings": serialized_incidents,
-        "available_tress_respondents": tress_avail_serialized,
-        "available_fire_respondents": fire_avail_serialized,
-        "pop_up": pop_up,
-        "incident_type": incident_type
-    })
+    return render(
+        request,
+        "settings/incidents_map.html",
+        {
+            "incident_mappings": serialized_incidents,
+            "available_tress_respondents": tress_avail_serialized,
+            "available_fire_respondents": fire_avail_serialized,
+            "pop_up": pop_up,
+            "incident_type": incident_type,
+        },
+    )
+
 
 def assign_respondent(request):
     if request.method == "POST":
         type_name = request.POST.get("incident_type")
-        selected_respondents = request.POST.getlist("selected_respondents")  # Retrieve selected IDs
+        selected_respondents = request.POST.getlist(
+            "selected_respondents"
+        )  # Retrieve selected IDs
 
         for respondent in selected_respondents:
             name = respondent
@@ -312,19 +335,26 @@ def assign_respondent(request):
             try:
                 respondent = Respondent.objects.get(name=name)
             except Respondent.DoesNotExist:
-                return JsonResponse({"success": False, "error": "Respondent does not exist"}, status=400)
+                return JsonResponse(
+                    {"success": False, "error": "Respondent does not exist"}, status=400
+                )
 
             # Check if the incident type exists
-            incident_type, created = IncidentType.objects.get_or_create(type_name=type_name)
+            incident_type, created = IncidentType.objects.get_or_create(
+                type_name=type_name
+            )
 
             # Check if the respondent is already assigned
             if incident_type.respondents.filter(id=respondent.id).exists():
-                return JsonResponse({"success": False, "error": "Respondent already assigned"}, status=400)
+                return JsonResponse(
+                    {"success": False, "error": "Respondent already assigned"},
+                    status=400,
+                )
 
             # Add the respondent to the incident type
             incident_type.respondents.add(respondent)
 
-    return redirect('incidents_mapping_page')
+    return redirect("incidents_mapping_page")
 
 
 @require_http_methods(["GET", "POST"])
@@ -468,26 +498,6 @@ def get_respondent_names():
         return [resp.name for resp in respondents]
     return []
 
-## Settings -> Respondents Page
-def respondents_page(request):
-    pop_up = request.GET.get("pop_up", "false").lower() == "true"
-    return render(request, "settings/respondents.html", {
-        "headers": ["ID", "Name", "Phone", "Email", "Active"],
-        "respondents": RespondentSerializer(Respondent.objects.all(), many=True).data,
-        "pop_up": pop_up,
-    })
-
-def add_respondent(request):
-    if request.method == "POST":
-        name = request.POST.get("name")
-        phone = request.POST.get("phone")
-        email = request.POST.get("email")
-        active = request.POST.get("is_active") == "on"
-        respondent = Respondent.objects.create(name=name, phone=phone, email=email, is_active=active)
-
-        respondent.save()
-        
-    return redirect('respondents_page')
 
 @require_GET
 def incidents(request):
