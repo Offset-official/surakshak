@@ -273,7 +273,6 @@ def incidents_mapping_page(request):
 
     ## Filtering for fire
     fire_ids = (IncidentType.objects.filter(type_name="Fire").values_list('id', flat=True))
-
     fire_avail_respondents = Respondent.objects.exclude(incident_types__in=fire_ids)
     fire_avail_serialized = RespondentSerializer(fire_avail_respondents, many=True).data
 
