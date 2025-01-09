@@ -50,7 +50,9 @@ logger.addHandler(MyHandler())
 def login_page(request):
     next_url = request.GET.get(
         "next", "homepage"
-    )  # Default to 'homepage' if 'next' isn't present
+    )
+    if request.user.is_authenticated:
+        return render(request, "homepage.html")
     return render(request, "auth_page.html", {"next": next_url})
 
 
