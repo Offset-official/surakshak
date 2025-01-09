@@ -82,26 +82,26 @@ def heartbeat(request):
     Expected response format: {'success': True, 'status': 'ACTIVE'/'INACTIVE', 'lockdown': True/False}
     """
     try:
-        # status = SystemConfig.instrusion_state
-        # ld = SystemConfig.lockdown
-        # logger.debug(f"Heartbeat check: {status}, Lockdown: {ld}")
-        # incident_id = SystemConfig.incident_id
-        return JsonResponse(
-            {
-                "success": True,
-                "status": 0,
-                "lockdown": False,
-                "incident_id": 1,
-            }
-        )
+        status = SystemConfig.instrusion_state
+        ld = SystemConfig.lockdown
+        logger.debug(f"Heartbeat check: {status}, Lockdown: {ld}")
+        incident_id = SystemConfig.incident_id
         # return JsonResponse(
         #     {
         #         "success": True,
-        #         "status": status,
-        #         "lockdown": ld,
-        #         "incident_id": incident_id,
+        #         "status": 0,
+        #         "lockdown": False,
+        #         "incident_id": 1,
         #     }
         # )
+        return JsonResponse(
+            {
+                "success": True,
+                "status": status,
+                "lockdown": ld,
+                "incident_id": incident_id,
+            }
+        )
     except Exception as e:
         # logger.error(f"Heartbeat error: {e}")
         return JsonResponse(
@@ -588,89 +588,81 @@ def incidents(request):
 
 
 @require_http_methods(["GET", "POST"])
-def camera_adjust(request):
-    cameras = Camera.objects.all()
-    context = {"cameras": cameras}
+def adjust_camera(request, camera_name=None):
+    """
+    Adjust settings for a specific camera without needing to select from a dropdown.
+    
+    URL pattern example:
+      path("adjust_camera/<str:camera_name>/", views.adjust_camera, name="adjust_camera")
+
+    Args:
+        request (HttpRequest): The incoming request.
+        camera_name (str): Name of the camera to adjust.
+
+    Returns:
+        HttpResponse: Rendered template with context or redirect on actions.
+    """
+    # If no camera name is supplied, you can decide what to do:
+    # - show an error, or 
+    # - redirect to a page explaining no camera was selected, etc.
+    if not camera_name:
+        messages.error(request, "No camera name specified.")
+        return redirect("home")  # Replace "home" with your homepage or another view
+
+    # Retrieve the camera object by name
+    camera = get_object_or_404(Camera, name=camera_name)
+
+    # Put camera in context for the template
+    context = {
+        "selected_camera": camera,
+        "camera_name": camera_name,
+    }
 
     if request.method == "POST":
+        # 1) Capture Snapshot
         if "capture_snapshot" in request.POST:
-            # Step 1 & 2: Capture Snapshot
-            camera_id = request.POST.get("camera_id")
-            if not camera_id:
-                if not request.user.is_authenticated:
-                    return redirect(f"{reverse('login_page')}?next=camera_adjust")
-                messages.error(request, "Please select a camera.")
-                return redirect("camera_adjust")
-
-            try:
-                camera = Camera.objects.get(id=camera_id)
-            except Camera.DoesNotExist:
-                if not request.user.is_authenticated:
-                    return redirect(f"{reverse('login_page')}?next=camera_adjust")
-                messages.error(request, "Selected camera does not exist.")
-                return redirect("camera_adjust")
-
             frame = CameraManager._cameras[camera.name].frame
-            # print(frame)
 
             if frame is None:
-                if not request.user.is_authenticated:
-                    return redirect(f"{reverse('login_page')}?next=camera_adjust")
                 messages.error(
                     request,
-                    "Failed to capture image from the camera. Is camera viewable in streams?",
+                    "Failed to capture image from the camera. Is the camera streaming?"
                 )
-                return redirect("camera_adjust")
+                return redirect("adjust_camera", camera_name=camera_name)
 
             # Encode frame to JPEG
             ret, buffer = cv2.imencode(".jpg", frame)
             if not ret:
-                if not request.user.is_authenticated:
-                    return redirect(f"{reverse('login_page')}?next=camera_adjust")
                 messages.error(request, "Failed to encode the captured image.")
-                return redirect("camera_adjust")
+                return redirect("adjust_camera", camera_name=camera_name)
 
             image_data = buffer.tobytes()
             image_name = f"camera_{camera.id}_snapshot.jpg"
             image_path = os.path.join("snapshots", image_name)
 
-            # Save the image to MEDIA_ROOT/snapshots/
+            # Save the image in MEDIA_ROOT/snapshots/
             full_path = os.path.join(django_settings.MEDIA_ROOT, "snapshots")
-            os.makedirs(full_path, exist_ok=True)  # Ensure the directory exists
+            os.makedirs(full_path, exist_ok=True)
             file_path = os.path.join(full_path, image_name)
             with open(file_path, "wb") as f:
                 f.write(image_data)
 
-            # Pass the image URL to the template
-            context["selected_camera"] = camera
+            # Add snapshot URL to context
             context["snapshot_url"] = os.path.join(
                 django_settings.MEDIA_URL, "snapshots", image_name
             )
-            if not request.user.is_authenticated:
-                return redirect(f"{reverse('login_page')}?next=camera_adjust")
             return render(request, "camera_adjust.html", context)
 
+        # 2) Save Coordinates
         elif "save_coordinates" in request.POST:
-            # Step 3: Save Coordinates
-            camera_id = request.POST.get("camera_id")
             x1 = request.POST.get("x1")
             y1 = request.POST.get("y1")
             x2 = request.POST.get("x2")
             y2 = request.POST.get("y2")
 
-            if not all([camera_id, x1, y1, x2, y2]):
-                if not request.user.is_authenticated:
-                    return redirect(f"{reverse('login_page')}?next=camera_adjust")
+            if not all([x1, y1, x2, y2]):
                 messages.error(request, "All coordinate fields are required.")
-                return redirect("camera_adjust")
-
-            try:
-                camera = Camera.objects.get(id=camera_id)
-            except Camera.DoesNotExist:
-                if not request.user.is_authenticated:
-                    return redirect(f"{reverse('login_page')}?next=camera_adjust")
-                messages.error(request, "Selected camera does not exist.")
-                return redirect("camera_adjust")
+                return redirect("adjust_camera", camera_name=camera_name)
 
             # Validate and save coordinates
             try:
@@ -682,14 +674,9 @@ def camera_adjust(request):
                 messages.success(request, "Coordinates saved successfully.")
             except ValueError:
                 messages.error(request, "Invalid coordinate values.")
-            if not request.user.is_authenticated:
-                return redirect(f"{reverse('login_page')}?next=camera_adjust")
-            return redirect("camera_adjust")
-    if not request.user.is_authenticated:
-        return redirect(f"{reverse('login_page')}?next=camera_adjust")
+            return redirect("adjust_camera", camera_name=camera_name)
+
     return render(request, "camera_adjust.html", context)
-
-
 @require_http_methods(["GET"])
 def single_stream_page(request, camera_name):
     """
