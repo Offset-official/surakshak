@@ -11,7 +11,7 @@
             {% csrf_token %}
             <input type="hidden" name="incident_type" value="{{ incident_type }}">
             <button id="multiLevelDropdownButton"
-                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                class="text-white bg-accent hover:bg-accent focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-accent dark:hover:bg-accentDark dark:focus:ring-accentDark"
                 type="button">
                 Add Members
                 <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -74,12 +74,12 @@
             <div class="flex flex-col gap-2 sm:flex-row sm:justify-center">
                 <div class="mt-10">
                     <a href="?pop_up=false"><button
-                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                            class="text-white bg-primaryBg/20 hover:bg-primaryBg focus:ring-4 focus:outline-none focus:ring-primaryBg/20 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-primaryBg/20 dark:hover:bg-primaryhi dark:focus:ring-primaryHighlight"
                             type="button">Close</button></a>
                 </div>
                 <div class="mt-10">
                     <button
-                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                        class="text-white bg-accent hover:bg-accent focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-accent dark:hover:bg-accentDark dark:focus:ring-accentDark"
                         data-heading="Tresspassing">Submit</button></a>
                 </div>
             </div>
@@ -94,18 +94,18 @@
             <h2 class="text-3xl font-bold leading-tight text-gray-900 dark:text-white lg:text-4xl">Incidents Mapping
             </h2>
         </div>
-        <div class="space-y-8 lg:grid lg:grid-cols-3 sm:gap-6 xl:gap-10 lg:space-y-0">
+        <div class="space-y-8 lg:grid lg:grid-cols-3 sm:gap-3 xl:gap-4 lg:space-y-0">
             <!-- Card - 1 -->
             <div
-                class="flex flex-col p-6 mx-auto text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-600 xl:p-8 dark:bg-gray-800 dark:text-white">
+                class="flex flex-col p-6 mx-max text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-900 xl:p-8 dark:bg-gray-700 dark:text-white">
                 <h3 class="mb-4 text-2xl font-semibold">Tresspassing</h3>
 
                 <!-- Table -->
                 <div class="p-1.5 min-w-full inline-block justify-center h-[35vh]">
-                    <div class="overflow-hidden shadow-md rounded-lg">
-                        <div class="table border-collapse table-auto w-full divide-y divide-gray-100">
+                    <div class="overflow-hidden shadow-2xl rounded-lg">
+                        <div class="table border-collapse table-auto w-full">
                             <div
-                                class="table-row-group divide-y divide-gray-100 border-b dark:bg-gray-800 dark:border-gray-700">
+                                class="table-row-group border-b dark:bg-gray-800 dark:border-gray-800">
                                 {% for incident_mapping in incident_mappings %}
                                 {% if incident_mapping.type_name == 'Tresspassing' %}
                                 {% for member in incident_mapping.respondents %}
@@ -136,7 +136,7 @@
 
         <!-- Card - 2 -->
         <div
-            class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-600 xl:p-8 dark:bg-gray-800 dark:text-white">
+        class="flex flex-col p-6 mx-max text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-900 xl:p-8 dark:bg-gray-700 dark:text-white">
             <h3 class="mb-4 text-2xl font-semibold">Fire</h3>
 
             <!-- Table -->
@@ -174,7 +174,7 @@
 
     <!-- Card - 3 -->
     <div
-        class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-600 xl:p-3 dark:bg-gray-800 dark:text-white">
+        class="flex flex-col p-6 mx-max max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-600 xl:p-3 dark:bg-gray-800 dark:text-white">
         <h3 class="mb-4 text-2xl font-semibold">Hazard</h3>
 
         <!-- Table -->

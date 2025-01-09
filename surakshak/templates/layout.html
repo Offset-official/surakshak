@@ -1,5 +1,4 @@
-{% load static %}
-{% load static tailwind_tags %}
+{% load static %} {% load static tailwind_tags %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -7,8 +6,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    {% tailwind_preload_css %}
-    {% tailwind_css %}
+    {% tailwind_preload_css %} {% tailwind_css %}
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap"
       rel="stylesheet"
@@ -16,9 +14,15 @@
     {% block styling %}{% endblock %}
   </head>
 
+<<<<<<< HEAD
   <body class="bg-primaryBg text-textColor font-sans p-10 relative">
     <!-- Navbar -->
     <header class="flex justify-between items-center w-full mb-10">
+=======
+  <body class="bg-primaryBg text-textColor font-sans p-10 relative overflow-x-hidden">
+    <!-- Header Section -->
+    <div class="flex flex-col xl:flex-row justify-between w-full items-center mb-10 ">
+>>>>>>> main
       <!-- Logo Section -->
       <a class="flex gap-4" href="/">
         <div class="h-full">
@@ -30,55 +34,61 @@
         </div>
       </a>
 
-      <!-- Menu / Navigation -->
       <nav class="flex border-2 rounded-lg border-primaryHighlight">
         <a
           href="/streams"
-          class="py-4 px-20 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
-          >Streams</a
+          class="py-4 px-12 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight {% if request.path == '/streams/' %}bg-primaryHighlight text-accent{% endif %}"
+          >Stream</a
         >
         <a
           href="/notify"
-          class="py-4 px-20 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
+          class="py-4 px-12 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight {% if '/notify' in request.path %}bg-primaryHighlight text-accent{% endif %}"
           >Notify</a
         >
         <a
           href="/logs"
-          class="py-4 px-20 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
+          class="py-4 px-12 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight {% if '/logs' in request.path %}bg-primaryHighlight text-accent{% endif %}"
           >Logs</a
         >
         <a
           href="/settings"
-          class="py-4 px-20 text-sm font-normal transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
+          class="py-4 px-12 text-sm font-normal transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
           >Settings</a
         >
       </nav>
-
-      <!-- Toggle & Heartbeat Section -->
-      <div class="flex items-center gap-4 ml-4 w-44 justify-center py-2">
-        <!-- Heartbeat / Caution Icons -->
-        <div class="relative group" style="width: 24px; height: 24px;">
-          <!-- Heartbeat Icon -->
-          <svg
-            id="heartbeat-icon"
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-6 h-6 text-gray-400 transition-colors duration-300"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+      
+      <div class="flex items-center gap-4 justify-center">
+        <!-- Internet Status -->
+        <div class="relative group">
+          <div class="flex items-center gap-2">
+            <svg
+              id="internet-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-5 h-5 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+              />
+            </svg>
+            <span id="internet-status" class="text-sm">Checking...</span>
+          </div>
+          <span
+            id="internet-tooltip"
+            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden px-2 py-1 bg-gray-700 text-white text-xs rounded group-hover:block"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 
-                 C2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 
-                 4.5 2.09C13.09 3.81 14.76 3 
-                 16.5 3 19.58 3 22 5.42 22 8.5
-                 c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-            />
-          </svg>
-
+            Internet connection status
+          </span>
+        </div>
+    
+        
+        <div class="relative group">
+          <img src="{% static '9lfK.gif' %}" class="w-20 h-20">
           <!-- Caution Icon (Hidden by default) -->
           <svg
             id="caution-icon"
@@ -93,57 +103,64 @@
               stroke-linejoin="round"
               stroke-width="2"
               d="M12 9v2m0 4h.01M21 12a9 9 0
-                 11-18 0 9 9 0 0118 0z"
+                  11-18 0 9 9 0 0118 0z"
             />
           </svg>
-
+  
           <!-- Tooltip -->
           <span
             id="heartbeat-tooltip"
             class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden px-2 py-1 bg-gray-700 text-white text-xs rounded group-hover:block"
           >
-            Checking...
+            Backend status
           </span>
         </div>
 
-        <!-- Toggle Button -->
-        <label class="inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            class="sr-only peer"
-            onchange="toggleSystemState()"
-            id="status-toggle"
-          />
+
+        <!-- Active/Inactive Toggle -->
+        <div class="relative group">
+          <label class="inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              class="sr-only peer"
+              onchange="toggleSystemState()"
+              id="status-toggle"
+            />
+
+            <div
+              class="relative w-12 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-3 peer-focus:ring-primaryHighlight rounded-full peer dark:bg-red-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[3px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-500"
+            ></div>
+          </label>
           <span
-            class="mr-3 text-sm font-normal"
-            id="toggle-label"
+            id="toggle-tooltip"
+            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden px-2 py-1 bg-gray-700 text-white text-xs rounded group-hover:block"
           >
-            Inactive
+            Inference status
           </span>
-          <div
-            class="relative w-12 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-3 peer-focus:ring-primaryHighlight
-                   rounded-full peer dark:bg-accent peer-checked:after:translate-x-full
-                   rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white
-                   after:content-[''] after:absolute after:top-0.5 after:start-[3px]
-                   after:bg-white after:border-gray-300 after:border
-                   after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600
-                   peer-checked:bg-green-500"
-          ></div>
-        </label>
+        </div>
+
       </div>
+      </div>
+<<<<<<< HEAD
     </header>
+=======
+>>>>>>> main
 
     <!-- Intrusion Popup (Initially Hidden) -->
     <div
       id="intrusion-popup"
+<<<<<<< HEAD
       class="hidden fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-red-700 text-white p-6 rounded shadow-md w-80 text-center animate-pulse"
+=======
+      class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-red-600 text-white p-6 rounded shadow-md w-1/2 h-96 text-center justify-center items-center flex flex-col"
+>>>>>>> main
     >
-      <p class="mb-4 text-lg font-bold">
+      <p class="mb-4 text-2xl font-bold">
         Intrusion has been detected. Click here to resolve.
       </p>
       <button
         id="resolve-button"
-        class="bg-white text-red-700 px-4 py-2 rounded font-semibold hover:bg-gray-100 transition"
+        class="bg-white text-red-600 px-4 py-2 rounded font-semibold hover:bg-gray-100 transition"
       >
         Resolve
       </button>
@@ -153,22 +170,57 @@
     <audio id="lockdown-audio" src="{% static 'lockdown.mp3' %}" loop preload="auto"></audio>
 
     <!-- Main Content -->
-    <main>
-      {% block content %}
-      {% endblock content %}
-    </main>
+    <main class=" border-primaryHighlight rounded-lg p-8">{% block content %} {% endblock content %}</main>
 
     <!-- Footer -->
-    <footer class="text-textColor opacity-15 mt-10">
+    <footer class="text-textColor opacity-15 text-center text-sm bottom-1 ">
       Surakshak &copy; 2025 All Rights Reserved.
     </footer>
 
     <!-- JavaScript -->
     <script>
-      let isToggling = false; // Prevent multiple toggle requests
-
       document.addEventListener("DOMContentLoaded", () => {
+<<<<<<< HEAD
         // Grab references once
+=======
+        let isToggling = false; // Prevent multiple toggle requests
+
+        const internetIcon = document.getElementById("internet-icon");
+        const internetStatus = document.getElementById("internet-status");
+
+        async function checkInternetConnection() {
+          try {
+            const start = Date.now();
+            const response = await fetch("https://www.google.com/generate_204", {
+              mode: "no-cors",
+              cache: "no-store",
+            });
+            if (response) {
+              const responseTime = Date.now() - start;
+          
+              // Update UI for successful connection
+              internetIcon.classList.remove("text-gray-400", "text-red-500");
+              internetIcon.classList.add("text-green-500");
+              internetStatus.textContent = `Connected (${responseTime}ms)`;
+              internetStatus.classList.remove("text-red-500");
+              internetStatus.classList.add("text-green-500");
+            } else {
+              throw new Error("Response not OK");
+            }
+          } catch (error) {
+            // Update UI for offline status
+            internetIcon.classList.remove("text-gray-400", "text-green-500");
+            internetIcon.classList.add("text-red-500");
+            internetStatus.textContent = "Offline";
+            internetStatus.classList.remove("text-green-500");
+            internetStatus.classList.add("text-red-500");
+          }
+          
+        }
+
+        
+
+>>>>>>> main
         const heartbeatIcon = document.getElementById("heartbeat-icon");
         const cautionIcon = document.getElementById("caution-icon");
         const heartbeatTooltip = document.getElementById("heartbeat-tooltip");
@@ -309,6 +361,9 @@
         fetchHeartbeat();
         // Repeat every second
         setInterval(fetchHeartbeat, 1000);
+        checkInternetConnection()
+        // Repeat every second
+        setInterval(checkInternetConnection, 3000);
 
         // Tooltip event listeners
         const heartbeatContainer = heartbeatIcon.parentElement;

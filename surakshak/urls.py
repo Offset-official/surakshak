@@ -23,11 +23,16 @@ from .views import (
     single_stream_page,
     camera_page,
     incidents_mapping_page,
-    assign_respondent
+    assign_respondent,
+    login_page,
+    login,
+    add_camera
 )
 
 urlpatterns = [
-    path("", homepage, name="homepage"),
+    path("", login_page , name="login_page"),
+    path("auth/", login , name="login"),
+    path("home/", homepage, name="homepage"),
     path("streams/", stream_page, name="stream_page"),
     path("notify/", notify_page, name="notify_page"),
     path("logs/", logs_page, name="logs_page"),
@@ -44,7 +49,8 @@ urlpatterns = [
     path("incidents", incidents, name="incidents"),
     path("camera_adjust", camera_adjust, name="camera_adjust"),
     path('stream/<str:camera_name>/', single_stream_page, name='single_stream_page'),
-    path('settings/camera_page', camera_page, name='camera_page'),
+    path('settings/camera_page/', camera_page, name='camera_page'),
+    path('settings/add_camera/', add_camera, name='add_camera'),
     path('settings/incidents_mapping', incidents_mapping_page, name='incidents_mapping_page'),
     path('settings/assign_respondent/', assign_respondent, name='assign_respondent')
     

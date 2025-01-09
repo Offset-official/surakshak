@@ -45,54 +45,75 @@ class SurakshakConfig(AppConfig):
             for stream in streams:
                 CameraManager.add_camera(stream["name"], stream["url"])
                 # each camera is running in a separate thread
-            print("All camera fetchers started.")            
+            print("All camera fetchers started.")
+
         initialize_cameras()
+
+        from .models import IncidentType
+
+        if IncidentType.objects.all().count() == 0:
+            IncidentType.objects.create(type_name="Trespassing")
 
         from .models import InferenceSchedule
 
         if InferenceSchedule.objects.all().count() == 0:
             InferenceSchedule.objects.create(
-                start_time="06:00", end_time="15:00", 
-                monday=True, tuesday=True, wednesday=True, thursday=True, friday=True, saturday=False, sunday=False
+                start_time="06:00",
+                end_time="15:00",
+                monday=True,
+                tuesday=True,
+                wednesday=True,
+                thursday=True,
+                friday=True,
+                saturday=False,
+                sunday=False,
             )
 
-         # set intrusion state
+        # set intrusion state
         from .models import InferenceSchedule
+
         time_now = datetime.datetime.now()
-        hour_now = time_now.hour 
+        hour_now = time_now.hour
         min_now = time_now.minute
         inactive_schedule = InferenceSchedule.objects.get(pk=1)
         # print(inactive_schedule)
         today_weekday = time_now.weekday()
         mappings = {
-            0: "monday", 1:"tuesday", 2: "wednesday", 3: "thursday", 4:"friday", 5:"saturday", 6:"sunday"
+            0: "monday",
+            1: "tuesday",
+            2: "wednesday",
+            3: "thursday",
+            4: "friday",
+            5: "saturday",
+            6: "sunday",
         }
         # check if day matches
         if getattr(inactive_schedule, mappings[today_weekday]):
-            
+
             inactive_schdule_start_time = inactive_schedule.start_time
-            inactive_schedule_start_hour = inactive_schdule_start_time.hour 
+            inactive_schedule_start_hour = inactive_schdule_start_time.hour
             inactive_schedule_start_min = inactive_schdule_start_time.minute
-            inactive_schdule_end_time = inactive_schedule.end_time 
-            inactive_schdule_end_hour = inactive_schdule_end_time.hour 
+            inactive_schdule_end_time = inactive_schedule.end_time
+            inactive_schdule_end_hour = inactive_schdule_end_time.hour
             inactive_schdule_end_min = inactive_schdule_end_time.minute
-            if (inactive_schedule_start_hour, inactive_schedule_start_min) < (hour_now, min_now) < (inactive_schdule_end_hour, inactive_schdule_end_min):
+            if (
+                (inactive_schedule_start_hour, inactive_schedule_start_min)
+                < (hour_now, min_now)
+                < (inactive_schdule_end_hour, inactive_schdule_end_min)
+            ):
                 logger.info("Starting system with INACTIVE mode.")
 
                 SystemConfig.set_intrusion("INACTIVE")
                 # InferenceEngine.stop() # does nothing, for completeness
             else:
-                logger.info("Starting system with ACTIVE mode.") # school is closed
+                logger.info("Starting system with ACTIVE mode.")  # school is closed
                 SystemConfig.set_intrusion("ACTIVE")
                 InferenceEngine.start()
 
         else:
-            logger.info("Starting system with ACTIVE mode.") # school is closed
+            logger.info("Starting system with ACTIVE mode.")  # school is closed
             SystemConfig.set_intrusion("ACTIVE")
             InferenceEngine.start()
-
-
-
 
         # if getattr(settings, "INFERENCE_ENGINE", False):
         #     logger.info("Starting inference engine")
@@ -100,7 +121,3 @@ class SurakshakConfig(AppConfig):
         logger.info("Loading environment variables...")
         load_dotenv()
         SystemConfig.start_state_switch(InferenceSchedule)
-
-
-       
-

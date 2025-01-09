@@ -1,4 +1,102 @@
 {% extends "settings.html" %}
 
 {% block settings_content %}
+
+{% if pop_up %}
+<!-- Add a camera view -->
+<div class="flex justify-center items-center h-screen w-screen bg-black bg-opacity-50 fixed top-0 left-0 z-50">
+    <div class="bg-primaryHighlight p-6 w-[500px] relative">
+        <div class="flex text-4xl font-bold text-white mb-5 justify-left">Add Camera</div>
+        <form name="add_camera" method="post" action="../add_camera/">
+            {% csrf_token %}
+            <div class="mb-5">
+                <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
+                <input type="text" name="name" id="name"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-accent focus:border-accent block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-accentDark dark:focus:border-accentDark" required="True"/>
+            </div>
+            <div class="mb-5">
+                <label for="location" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Location</label>
+                <input type="text" name="location" id="location"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-accent focus:border-accent block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-accentDark dark:focus:border-accentDark" required="True"/>
+            </div>
+            <div class="mb-5">
+                <label for="rtsp_url" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">RTSP Url</label>
+                <input type="text" name="rtsp_url" id="rtsp_url"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-accent focus:border-accent block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-accentDark dark:focus:border-accentDark" required="True"/>
+            </div>
+            <div class="flex flex-col gap-2 sm:flex-row sm:justify-center">
+                <div class="mt-10">
+                    <a href="?pop_up=false"><button
+                            class="text-white bg-primaryBg/20 hover:bg-primaryBg focus:ring-4 focus:outline-none focus:ring-primaryBg/20 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-primaryBg/20 dark:hover:bg-primaryhi dark:focus:ring-primaryHighlight"
+                            type="button">Close</button></a>
+                </div>
+                <div class="mt-10">
+                    <button
+                        class="text-white bg-accent hover:bg-accent focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-accent dark:hover:bg-accentDark dark:focus:ring-accentDark">Submit</button></a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Table Display -->
+<div class="-m-2.5 overflow-auto">
+    <div class="p-1.5 min-w-full inline-block justify-center h-[50vh] overflow-y-scroll">
+        <div class="overflow-hidden shadow-md rounded-lg">
+            <div class="table border-collapse table-auto w-full divide-y divide-gray-100">
+                <div class="table-header-group">
+                    <div class="table-row bg-gray-50 dark:bg-gray-700">
+                        <div
+                            class="table-cell px-6 py-3 text-center text-xl font-bold text-white-500 uppercase light:text-neutral-500">
+                            {{ headers.0 }}</div>
+                        <div
+                            class="table-cell px-6 py-3 text-center text-xl font-bold text-white-500 uppercase light:text-neutral-500">
+                            {{ headers.1 }}</div>
+                        <div
+                            class="table-cell px-6 py-3 text-center text-xl font-bold text-white-500 uppercase light:text-neutral-500">
+                            {{ headers.2 }}</div>
+                        <div
+                            class="table-cell px-6 py-3 text-center text-xl font-bold text-white-500 uppercase light:text-neutral-500">
+                            {{ headers.3 }}</div>
+                    </div>
+                </div>
+                <div class="table-row-group divide-y divide-gray-100 border-b dark:bg-gray-800 dark:border-gray-700">
+                    {% for respondent in respondents %}
+                    <div class="table-row">
+                        <div
+                            class="table-cell px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-100">
+                            {{ respondent.id }}</div>
+                        <div
+                            class="table-cell
+                                px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-100">
+                            {{ respondent.name }}</div>
+                        <div
+                            class="table-cell
+                                px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-100">
+                            {{ respondent.location }}</div>
+                        <div
+                            class="table-cell
+                                px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-100">
+                            {{ respondent.rtsp_url }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row sm:justify-centre">
+    {% if not pop_up %}
+    <a class="" href="?pop_up=true">
+        <div class="w-60 mx-auto bg-primaryHighlight shadow-md rounded-lg p-3 space-y-1">
+            <button class="py-2 px-4 bg-primaryBg text-white rounded hover:bg-accent">Add</button>
+    </a>
+    <button class="py-2 px-4 bg-primaryBg text-white rounded hover:bg-accent">Edit</button>
+    <button class="py-2 px-4 bg-primaryBg text-white rounded hover:bg-accent">Delete</button>
+
+    {% endif %}
+</div>
+
 {% endblock settings_content %}

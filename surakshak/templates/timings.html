@@ -30,7 +30,7 @@
         <!-- Start Time Field -->
         <div class="mb-4">
             <label for="{{ form.start_time.id_for_label }}" class="block text-white font-semibold mb-2">Start Time</label>
-            {% render_field form.start_time class="w-full bg-gray-700 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" %}
+            {% render_field form.start_time class="w-full bg-gray-700 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent" %}
             {% if form.start_time.errors %}
                 <p class="text-red-400 text-sm mt-1">{{ form.start_time.errors }}</p>
             {% endif %}
@@ -39,7 +39,7 @@
         <!-- End Time Field -->
         <div class="mb-6">
             <label for="{{ form.end_time.id_for_label }}" class="block text-white font-semibold mb-2">End Time</label>
-            {% render_field form.end_time class="w-full bg-gray-700 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" %}
+            {% render_field form.end_time class="w-full bg-gray-700 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent" %}
             {% if form.end_time.errors %}
                 <p class="text-red-400 text-sm mt-1">{{ form.end_time.errors }}</p>
             {% endif %}
@@ -51,37 +51,37 @@
             <div class="flex flex-wrap gap-4">
                 <!-- Monday -->
                 <div class="flex items-center">
-                    {% render_field form.monday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-blue-500 accent-white" %}
+                    {% render_field form.monday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-accent accent-white" %}
                     <label for="{{ form.monday.id_for_label }}" class="ml-2 text-white">Monday</label>
                 </div>
                 <!-- Tuesday -->
                 <div class="flex items-center">
-                    {% render_field form.tuesday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-blue-500 accent-white" %}
+                    {% render_field form.tuesday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-accent accent-white" %}
                     <label for="{{ form.tuesday.id_for_label }}" class="ml-2 text-white">Tuesday</label>
                 </div>
                 <!-- Wednesday -->
                 <div class="flex items-center">
-                    {% render_field form.wednesday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-blue-500 accent-white" %}
+                    {% render_field form.wednesday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-accent accent-white" %}
                     <label for="{{ form.wednesday.id_for_label }}" class="ml-2 text-white">Wednesday</label>
                 </div>
                 <!-- Thursday -->
                 <div class="flex items-center">
-                    {% render_field form.thursday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-blue-500 accent-white" %}
+                    {% render_field form.thursday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-accent accent-white" %}
                     <label for="{{ form.thursday.id_for_label }}" class="ml-2 text-white">Thursday</label>
                 </div>
                 <!-- Friday -->
                 <div class="flex items-center">
-                    {% render_field form.friday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-blue-500 accent-white" %}
+                    {% render_field form.friday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-accent accent-white" %}
                     <label for="{{ form.friday.id_for_label }}" class="ml-2 text-white">Friday</label>
                 </div>
                 <!-- Saturday -->
                 <div class="flex items-center">
-                    {% render_field form.saturday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-blue-500 accent-white" %}
+                    {% render_field form.saturday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-accent accent-white" %}
                     <label for="{{ form.saturday.id_for_label }}" class="ml-2 text-white">Saturday</label>
                 </div>
                 <!-- Sunday -->
                 <div class="flex items-center">
-                    {% render_field form.sunday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-blue-500 accent-white" %}
+                    {% render_field form.sunday class="h-4 w-4 bg-gray-700 border border-gray-600 rounded focus:ring-accent accent-white" %}
                     <label for="{{ form.sunday.id_for_label }}" class="ml-2 text-white">Sunday</label>
                 </div>
             </div>
@@ -95,7 +95,7 @@
             <input 
                 type="submit" 
                 value="Submit" 
-                class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition duration-300"
+                class="w-full bg-accent text-white py-2 px-4 rounded hover:bg-accent focus:ring-4 focus:outline-none focus:ring-accent font-medium text-center dark:bg-accent dark:hover:bg-accentDark dark:focus:ring-accentDark transition duration-300"
             >
         </div>
     </form>
