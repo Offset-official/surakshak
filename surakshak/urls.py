@@ -23,11 +23,15 @@ from .views import (
     single_stream_page,
     camera_page,
     incidents_mapping_page,
-    assign_respondent
+    assign_respondent,
+    login_page,
+    login
 )
 
 urlpatterns = [
-    path("", homepage, name="homepage"),
+    path("", login_page , name="login_page"),
+    path("auth/", login , name="login"),
+    path("home/", homepage, name="homepage"),
     path("streams/", stream_page, name="stream_page"),
     path("notify/", notify_page, name="notify_page"),
     path("logs/", logs_page, name="logs_page"),
