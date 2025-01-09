@@ -30,31 +30,43 @@
 
 
 <!-- Logs Table -->
-<div class="overflow-x-auto">
-    <table id="logsTable" class="min-w-full divide-y divide-gray-700">
-        <thead class="bg-primaryHighlight">
-            <tr>
-                <th class="px-6 py-3 text-left text-md font-bold text-gray-300 uppercase tracking-wider w-10p">ID</th>
-                <th class="px-6 py-3 text-left text-md font-bold text-gray-300 uppercase tracking-wider w-10p">Created At</th>
-                <th class="px-6 py-3 text-left text-md font-bold text-gray-300 uppercase tracking-wider w-70p">Log</th>
-            </tr>
-        </thead>
-        <tbody class="bg-primaryHighlight divide-y divide-gray-700">
-            {% for log in logs %}
-            <tr class="{% if forloop.counter > 50 %}hidden{% endif %}">
-                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-100">{{ log.id }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-100">{{ log.created_at }}</td>
-                <td class="px-6 py-4 whitespace-pre-wrap text-xs text-gray-100">{{ log.log }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="3" class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                    No logs available.
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="-m-2.5 overflow-auto">
+    <div class="p-1.5 min-w-full inline-block justify-center h-[50vh] overflow-y-scroll">
+        <div class="overflow-hidden shadow-md rounded-lg">
+            <div class="table border-collapse table-auto w-full divide-y divide-gray-100">
+                <div class="table-header-group">
+                    <div class="table-row bg-gray-50 dark:bg-gray-700">
+                        <div
+                            class="table-cell px-6 py-3 text-center text-xl font-bold text-white-500 uppercase light:text-neutral-500">
+                            ID</div>
+                        <div
+                            class="table-cell px-6 py-3 text-center text-xl font-bold text-white-500 uppercase light:text-neutral-500">
+                            Created At</div>
+                        <div
+                            class="table-cell px-6 py-3 text-center text-xl font-bold text-white-500 uppercase light:text-neutral-500">
+                            Log</div>
+                    </div>
+                </div>
+                <div class="table-row-group divide-y divide-gray-100 border-b dark:bg-gray-800 dark:border-gray-700">
+                    {% for log in logs %}
+                    <div class="table-row">
+                        <div
+                            class="table-cell px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-100">
+                            {{ log.id }}</div>
+                        <div
+                            class="table-cell
+                                px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-100">
+                            {{ log.created_at }}</div>
+                        <div
+                            class="table-cell
+                                px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-100">
+                            {{ log.log }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Pagination Controls -->
