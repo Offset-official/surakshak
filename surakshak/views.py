@@ -278,6 +278,8 @@ def timings_page(request):
     return render(request, "timings.html")
 
 def camera_page(request):
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('login_page')}?next=camera_page")
     pop_up = request.GET.get("pop_up", "false").lower() == "true"
     return render(request, "settings/camera_mod.html", {
         "headers": ["ID", "Name", "Location", "RTSP-URL"],
@@ -295,9 +297,6 @@ def add_camera(request):
         camera.save()
         
     return redirect('camera_page')
-    if not request.user.is_authenticated:
-        return redirect(f"{reverse('login_page')}?next=camera_page")
-    return render(request, "settings/camera_mod.html")
 
 ## Settings -> Respondents Page
 def respondents_page(request):

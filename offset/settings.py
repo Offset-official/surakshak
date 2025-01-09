@@ -39,7 +39,7 @@ SECRET_KEY = "django-insecure-_6k92yji3ysvkb_7w@9$ggdw8^br+pq(ti=j3us01_12gnpv_1
 DEBUG = True
 
 
-ALLOWED_HOSTS = ["10.1.59.6", "0.0.0.0"]
+ALLOWED_HOSTS = ["10.1.59.6", "0.0.0.0", "127.0.0.1"]
 
 TAILWIND_APP_NAME = "surakshak"
 
