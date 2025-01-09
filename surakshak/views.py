@@ -8,7 +8,7 @@ from .models import Camera, Incident, Respondent
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.core.mail import send_mail
-from .serializers import IncidentSerializer, RespondentSerializer, IncidentTypeSerializer
+from .serializers import IncidentSerializer, RespondentSerializer, IncidentTypeSerializer, CameraSerializer
 from twilio.rest import Client
 import os
 from dotenv import load_dotenv
@@ -235,7 +235,23 @@ def timings_page(request):
     return render(request, "timings.html")
 
 def camera_page(request):
-    return render(request, "settings/camera_mod.html")
+    pop_up = request.GET.get("pop_up", "false").lower() == "true"
+    return render(request, "settings/camera_mod.html", {
+        "headers": ["ID", "Name", "Location", "RTSP-URL"],
+        "respondents": CameraSerializer(Camera.objects.all(), many=True).data,
+        "pop_up": pop_up,
+    })
+
+def add_camera(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        location = request.POST.get("location")
+        rtsp_url = request.POST.get("rtsp_url")
+        camera = Camera.objects.create(name=name, location=location, rtsp_url=rtsp_url)
+
+        camera.save()
+        
+    return redirect('camera_page')
 
 ## Settings -> Respondents Page
 def respondents_page(request):
