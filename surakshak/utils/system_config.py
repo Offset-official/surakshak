@@ -83,8 +83,12 @@ def enter_lockdown(camera_name, file_obj):
     SystemConfig.instrusion_state = "INACTIVE" # for system consistency
     logger.info("ENTERING LOCKDOWN MODE.")
     inference_engine.InferenceEngine.stop() # all camera inferences will stop
+
+    from surakshak.models import IncidentType
+    incidentType = IncidentType.objects.filter(type_name="Trespassing").first()
+
     createdIncident = Incident.objects.create(
-        incident_type = "Trespassing",
+        incident_type = incidentType,
         camera=camera_name,
         resolved = False,
         resolver = None,
