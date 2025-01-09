@@ -27,6 +27,8 @@ class RespondentSerializer(serializers.ModelSerializer):
         ]
 
 class IncidentTypeSerializer(serializers.ModelSerializer):
+    # Nested serialization required for accessing foreign key fields
+    respondents = RespondentSerializer(many=True, read_only=True)
     class Meta:
         model = IncidentType
         fields = [
