@@ -96,7 +96,7 @@
         <div class="space-y-8 lg:grid lg:grid-cols-3 sm:gap-3 xl:gap-4 lg:space-y-0">
             <!-- Card - 1 -->
             <div
-                class="flex flex-col p-6 mx-max text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-900 xl:p-8 dark:bg-gray-700 dark:text-white">
+                class="flex flex-col p-6 mx-max text-center text-white rounded-lg border border-gray-100 shadow dark:border-gray-900 xl:p-8 bg-primaryHighlight ">
                 <h3 class="mb-4 text-2xl font-semibold">Tresspassing</h3>
 
                 <!-- Table -->
@@ -104,7 +104,7 @@
                     <div class="overflow-hidden shadow-2xl rounded-lg">
                         <div class="table border-collapse table-auto w-full">
                             <div
-                                class="table-row-group border-b dark:bg-gray-800 dark:border-gray-800">
+                                class="table-row-group  bg-primaryBg ">
                                 {% for incident_mapping in incident_mappings %}
                                 {% if incident_mapping.type_name == 'Tresspassing' %}
                                 {% for member in incident_mapping.respondents %}
@@ -135,15 +135,15 @@
 
         <!-- Card - 2 -->
         <div
-        class="flex flex-col p-6 mx-max text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-900 xl:p-8 dark:bg-gray-700 dark:text-white">
+        class="flex flex-col p-6 mx-max text-center text-white rounded-lg  shadow bg-primaryHighlight ">
             <h3 class="mb-4 text-2xl font-semibold">Fire</h3>
 
             <!-- Table -->
             <div class="p-1.5 min-w-full inline-block justify-center h-[35vh]">
                 <div class="overflow-hidden shadow-md rounded-lg">
-                    <div class="table border-collapse table-auto w-full divide-y divide-gray-100">
+                    <div class="table border-collapse table-auto w-full">
                         <div
-                            class="table-row-group divide-y divide-gray-100 border-b dark:bg-gray-800 dark:border-gray-700">
+                            class="table-row-group divide-y   bg-primaryBg">
                             {% for incident_mapping in incident_mappings %}
                             {% if incident_mapping.type_name == 'Fire' %}
                             {% for member in incident_mapping.respondents %}
@@ -173,7 +173,7 @@
 
     <!-- Card - 3 -->
     <div
-        class="flex flex-col p-6 mx-max max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-600 xl:p-3 dark:bg-gray-800 dark:text-white">
+        class="flex flex-col p-6 mx-max max-w-lg text-center text-white rounded-lg bg-primaryHighlight">
         <h3 class="mb-4 text-2xl font-semibold">Hazard</h3>
 
         <!-- Table -->
