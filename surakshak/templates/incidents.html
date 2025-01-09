@@ -2,16 +2,17 @@
 
 {% block content %}
 <!-- Button-Like Nav (placed above the table) -->
-<div class="flex justify-end mb-2">
+<div class="flex justify-between mb-8">
+    <div class="flex text-5xl font-bold">Logs</div>
   <nav class="flex border-2 rounded-lg border-primaryHighlight">
     <!-- Logs Link -->
     <a
       href="{% url 'logs_page' %}"
-      class="py-2 px-6 text-sm font-normal border-r-2 border-primaryHighlight
+      class="py-3 px-6 text-sm font-normal border-r-2 border-primaryHighlight
              transition-all duration-200 select-none cursor-pointer 
              hover:text-accent hover:bg-primaryHighlight"
     >
-      Logs
+      System Logs
     </a>
     <!-- Incidents Link (selected) -->
     <a
@@ -26,7 +27,6 @@
   </nav>
 </div>
 
-<div class="flex text-5xl font-bold mb-8">Incidents Page</div>
 
 <!-- Incidents Table -->
 <div class="overflow-x-auto">

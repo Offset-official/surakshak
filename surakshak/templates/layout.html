@@ -16,7 +16,7 @@
 
   <body class="bg-primaryBg text-textColor font-sans p-10 relative overflow-x-hidden">
     <!-- Header Section -->
-    <div class="flex justify-between w-full items-center mb-10 ">
+    <div class="flex flex-col xl:flex-row justify-between w-full items-center mb-10 ">
       <!-- Logo Section -->
       <a class="flex gap-4" href="/">
         <div class="h-full">
@@ -28,29 +28,29 @@
         </div>
       </a>
 
-      <!-- Menu / Navigation -->
       <nav class="flex border-2 rounded-lg border-primaryHighlight">
         <a
           href="/streams"
-          class="py-4 px-12 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
-          >Streams</a
+          class="py-4 px-12 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight {% if request.path == '/streams/' %}bg-primaryHighlight text-accent{% endif %}"
+          >Stream</a
         >
         <a
           href="/notify"
-          class="py-4 px-12 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
+          class="py-4 px-12 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight {% if '/notify' in request.path %}bg-primaryHighlight text-accent{% endif %}"
           >Notify</a
         >
         <a
           href="/logs"
-          class="py-4 px-12 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
+          class="py-4 px-12 text-sm font-normal border-r-2 border-primaryHighlight transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight {% if '/logs' in request.path %}bg-primaryHighlight text-accent{% endif %}"
           >Logs</a
         >
         <a
-          href="/settings/respondents/"
+          href="/settings"
           class="py-4 px-12 text-sm font-normal transition-all duration-200 select-none cursor-pointer hover:text-accent hover:bg-primaryHighlight"
           >Settings</a
         >
       </nav>
+      
       <div class="flex items-center gap-4 justify-center">
         <!-- Internet Status -->
         <div class="relative group">
@@ -153,10 +153,10 @@
     </div>
 
     <!-- Main Content -->
-    <main>{% block content %} {% endblock content %}</main>
+    <main class=" border-primaryHighlight rounded-lg p-8">{% block content %} {% endblock content %}</main>
 
     <!-- Footer -->
-    <footer class="text-textColor opacity-15 mt-10 text-center text-sm">
+    <footer class="text-textColor opacity-15 text-center text-sm bottom-1 ">
       Surakshak &copy; 2025 All Rights Reserved.
     </footer>
 

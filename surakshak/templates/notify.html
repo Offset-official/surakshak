@@ -58,7 +58,7 @@ Alert All
 </div>
   <script>
     async function sendNotification(data) {
-
+      
         try {
           const response = await fetch("{% url 'notify_api' %}", {
               method: "POST",
