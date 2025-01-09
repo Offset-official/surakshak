@@ -14,7 +14,7 @@ class Camera(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True)
     location = models.CharField(max_length=100, null=True)
-    rtsp_url = models.CharField(max_length=200)  # Updated to URLField for clarity
+    rtsp_url = models.CharField(max_length=200)  
     x1 = models.FloatField(default=None, null=True)
     x2 = models.FloatField(default=None, null=True)
     y1 = models.FloatField(default=None, null=True)
