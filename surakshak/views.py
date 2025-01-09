@@ -53,18 +53,26 @@ def heartbeat(request):
     Expected response format: {'success': True, 'status': 'ACTIVE'/'INACTIVE', 'lockdown': True/False}
     """
     try:
-        status = SystemConfig.instrusion_state
-        ld = SystemConfig.lockdown
-        logger.debug(f"Heartbeat check: {status}, Lockdown: {ld}")
-        incident_id = SystemConfig.incident_id
+        # status = SystemConfig.instrusion_state
+        # ld = SystemConfig.lockdown
+        # logger.debug(f"Heartbeat check: {status}, Lockdown: {ld}")
+        # incident_id = SystemConfig.incident_id
         return JsonResponse(
             {
                 "success": True,
-                "status": status,
-                "lockdown": ld,
-                "incident_id": incident_id,
+                "status": 0,
+                "lockdown": False,
+                "incident_id": 1,
             }
         )
+        # return JsonResponse(
+        #     {
+        #         "success": True,
+        #         "status": status,
+        #         "lockdown": ld,
+        #         "incident_id": incident_id,
+        #     }
+        # )
     except Exception as e:
         # logger.error(f"Heartbeat error: {e}")
         return JsonResponse(

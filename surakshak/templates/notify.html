@@ -2,108 +2,82 @@
 
 {% block content %}
 <div class="flex text-5xl font-bold mb-5">Notify</div>
-<div class="flex text-xl my-10">This is a sample page for testing notifications. This will be used later to notify manually. The only options will be the different groups. </div>
 <div class="max-w-md mx-auto bg-primaryHighlight shadow-md rounded-lg p-6 space-y-4">
-    <button
-      class="w-full py-2 px-4 bg-primaryBg text-white rounded hover:bg-accent"
-      onclick="sendNotification({modes:['sms','whatsapp','call','email'],incident_groups:['trespassing']})"
-    >
-      send to trespassing group (all modes)
-    </button>
-    <button
-      class="w-full py-2 px-4 bg-primaryBg text-white rounded hover:bg-accent"
-      onclick="sendNotification({modes:[],incident_groups:['trespassing','fire']})"
-    >
-        send to trespassing and fire group (all modes)
-    </button>
-    <button
-      class="w-full py-2 px-4 bg-primaryBg text-white rounded hover:bg-accent"
-      onclick="sendNotification({
-    phone: '+1234567890',
-    email: 'user@example.com',
-    incidentId: '123',
-    incidentType: 'Security Breach',
-    sendSms: true,
-    sendCall: true,
-    sendEmail: true,
-    sendWhatsapp: true});"
-    >
-      send to all groups (sms only)
-    </button>
-  </div>
+    
+<div class="flex flex-col gap-4 w-full max-w-md mx-auto p-4">
+    
+<button
+class="w-full py-6 px-8 bg-primaryBg text-white rounded hover:bg-accent font-bold text-xl"
+onclick="sendNotification({modes:['sms','whatsapp','call','email'],incident_groups:['trespassing','fire']})"
+>
+Alert All
+</button>
 
   
+  <div class="grid grid-cols-2 gap-3">
+    <button
+      class="w-full py-6 px-8 bg-primaryBg text-white rounded hover:bg-accent"
+      onClick={"sendNotification({
+        modes: ['sms'],
+        incident_groups: ['trespassing', 'fire']"
+      }
+    >
+      SMS
+    </button>
+    
+    <button
+      class="w-full py-6 px-8 bg-primaryBg text-white rounded hover:bg-accent"
+      onClick={"sendNotification({
+        modes: ['whatsapp'],
+        incident_groups: ['trespassing', 'fire']
+      "}
+    >
+      WhatsApp
+    </button>
+    
+    <button
+      class="w-full py-6 px-8 bg-primaryBg text-white rounded hover:bg-accent"
+      onClick={"sendNotification({
+        modes: ['email'],
+        incident_groups: ['trespassing', 'fire']
+      "}
+    >
+      Email
+    </button>
+    
+    <button
+      class="w-full py-6 px-8 bg-primaryBg text-white rounded hover:bg-accent"
+      onClick={"sendNotification({
+        modes: ['call'],
+        incident_groups: ['trespassing', 'fire']
+      "}
+    >
+      Call
+    </button>
+  </div>
+</div>
   <script>
-    async function sendNotification({
-        phone = null,
-        email = null,
-        incidentId = null,
-        incidentType = null,
-        sendSms = false,
-        sendCall = false,
-        sendEmail = false,
-        sendWhatsapp = false
-    } = {}) {
-        // Validate required parameters based on notification types
-        if ((sendSms || sendCall || sendWhatsapp) && !phone) {
-            alert("Phone number is required for SMS, call, or WhatsApp notifications");
-            return;
-        }
-        
-        if (sendEmail && !email) {
-            alert("Email is required for email notifications");
-            return;
-        }
-        
-        if (!incidentId || !incidentType) {
-            alert("Incident ID and type are required");
-            return;
-        }
-
-        // If no notification types are selected
-        if (!sendSms && !sendCall && !sendEmail && !sendWhatsapp) {
-            alert("Please select at least one notification type");
-            return;
-        }
-
-        const data = {
-            phone,
-            email,
-            incident_id: incidentId,
-            incident_type: incidentType,
-            send_sms: sendSms,
-            send_call: sendCall,
-            send_email: sendEmail,
-            send_whatsapp: sendWhatsapp
-        };
+    async function sendNotification(data) {
 
         try {
-            const response = await fetch("{% url 'notify_api' %}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": "{{ csrf_token }}",
-                },
-                body: JSON.stringify(data),
+          const response = await fetch("{% url 'notify_api' %}", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}",
+              },
+              body: JSON.stringify(data),
             });
-            
             const result = await response.json();
-            
-            if (result.success) {
-                // Create a message showing which notifications were sent
-                const sentTypes = [];
-                if (sendSms) sentTypes.push("SMS");
-                if (sendCall) sentTypes.push("Call");
-                if (sendEmail) sentTypes.push("Email");
-                if (sendWhatsapp) sentTypes.push("WhatsApp");
-                
-                alert(`Notifications sent successfully via: ${sentTypes.join(", ")}`);
-            } else {
-                alert(`Failed to send notifications: ${result.error}`);
-            }
+          if (result.success) {
+            alert(`Notification sent!`);
+          } else {
+            alert(`Failed to send notifications: ${result.error}`);
+          }
         } catch (error) {
-            alert(`Error sending notifications: ${error}`);
+          alert(`Error sending notifications: ${error}`);
         }
-    }
+      }
+
 </script>
 {% endblock content %}
