@@ -74,5 +74,84 @@ def send_call_notification(client, call_url, phone_numbers, from_number="+123456
         client.calls.create(from_=from_number, to=receiver, url=call_url)
 
 
-def send_all_notifs():
-    pass
+def send_all_notifs(incident_id, incident_type, phone, email):
+    """
+    Sends notifications through all available channels (email, SMS, WhatsApp, and call).
+
+    Args:
+        incident_id: ID of the incident
+        incident_type: Type of incident
+        phone: Recipient's phone number
+        email: Recipient's email address
+    """
+    try:
+        # Prepare common content
+        url = reverse("resolve", args=[incident_id])
+        main_text = f"Dear Surakshak,\n\nPlease check out the incident snippet and other information at {url} to resolve the alert as soon as possible.  \n\nRegards, \nInstitution"
+        subject = f"Alert! Incident Type: {incident_type} Detected at {incident_type}"
+
+        # Initialize Twilio client
+        account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+        auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+        twilio_client = Client(account_sid, auth_token)
+
+        # Format phone number for different services
+        formatted_phone = f"+91{phone}" if phone else None
+        whatsapp_phone = f"whatsapp:+91{phone}" if phone else None
+
+        # Send email notification
+        if email:
+            try:
+                send_email_notification(
+                    subject=subject,
+                    body=main_text,
+                    recipients=[email],
+                    from_email="abhinavkun26@gmail.com",
+                )
+            except Exception as e:
+                print(f"Failed to send email notification: {e}")
+
+        # Send SMS notification
+        if formatted_phone:
+            try:
+                send_sms_notification(
+                    client=twilio_client,
+                    body=main_text,
+                    phone_numbers=[formatted_phone],
+                    from_number="+12317666829",
+                )
+            except Exception as e:
+                print(f"Failed to send SMS notification: {e}")
+
+        # Send WhatsApp notification
+        if whatsapp_phone:
+            try:
+                print("Sending WhatsApp notification")
+                send_whatsapp_notification(
+                    client=twilio_client,
+                    content_sid="HXb5b62575e6e4ff6129ad7c8efe1f983e",
+                    content_variables='{"1":"12/1","2":"3pm"}',
+                    phone_numbers=[whatsapp_phone],
+                    from_whatsapp="whatsapp:+14155238886",
+                )
+            except Exception as e:
+                print(f"Failed to send WhatsApp notification: {e}")
+
+        # Send call notification
+        if formatted_phone:
+            try:
+                url = os.getenv("TwiML_BIN_URL")
+                send_call_notification(
+                    client=twilio_client,
+                    call_url=url,
+                    phone_numbers=[formatted_phone],
+                    from_number="+12317666829",
+                )
+            except Exception as e:
+                print(f"Failed to send call notification: {e}")
+
+        return True
+
+    except Exception as e:
+        print(f"Failed to send notifications: {e}")
+        return False
