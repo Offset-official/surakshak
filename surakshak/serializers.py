@@ -44,4 +44,8 @@ class CameraSerializer(serializers.ModelSerializer):
             "name",
             "location",
             "rtsp_url",
+            "x1",
+            "x2",
+            "y1",
+            "y2",
         ]
