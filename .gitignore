@@ -12,3 +12,4 @@ surakshak/migrations/
 surakshak/static/css/dist/styles.css
 db.sqlite3
 surakshak/media/
+/db.sqlite3

@@ -1,0 +1,8 @@
+django-tailwind
+Pillow
+django-tailwind[reload]
+opencv-python
+onnxruntime
+numpy
+django-widget-tweaks
+djangorestframework
