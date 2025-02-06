@@ -4,66 +4,68 @@
 <!-- Button-Like Nav (placed above the table) -->
 <div class="flex justify-between mb-8">
     <div class="flex text-5xl font-bold">Logs</div>
-  <nav class="flex border-2 rounded-lg border-primaryHighlight">
-    <!-- Logs Link (selected) -->
-    <a
-      href="{% url 'logs_page' %}"
-      class="py-3 px-6 text-sm font-normal border-r-2 border-primaryHighlight
-             transition-all duration-200 select-none cursor-pointer 
-             hover:text-accent hover:bg-primaryHighlight
-             bg-primaryHighlight text-accent"
-    >
-      System Logs 
-    </a>
-    <!-- Incidents Link -->
-    <a
-      href="{% url 'incidents' %}"
-      class="py-3 px-6 text-sm font-normal
-             transition-all duration-200 select-none cursor-pointer 
-             hover:text-accent hover:bg-primaryHighlight"
-    >
-      Incidents
-    </a>
-  </nav>
+    <nav class="flex border-2 rounded-lg border-primaryHighlight">
+        <!-- Logs Link (selected) -->
+        <a
+          href="{% url 'logs_page' %}"
+          class="py-3 px-6 text-sm font-normal border-r-2 border-primaryHighlight
+                 transition-all duration-200 select-none cursor-pointer 
+                 hover:text-accent hover:bg-primaryHighlight
+                 bg-primaryHighlight text-accent"
+        >
+          System Logs 
+        </a>
+        <!-- Incidents Link -->
+        <a
+          href="{% url 'incidents' %}"
+          class="py-3 px-6 text-sm font-normal
+                 transition-all duration-200 select-none cursor-pointer 
+                 hover:text-accent hover:bg-primaryHighlight"
+        >
+          Incidents
+        </a>
+    </nav>
 </div>
-
-
 
 <!-- Logs Table -->
 <div class="-m-2.5 overflow-auto">
+    <!-- Table height for scrollbar -->
     <div class="p-1.5 min-w-full inline-block justify-center h-[50vh] overflow-y-scroll">
         <div class="overflow-hidden shadow-md rounded-lg">
             <div class="table border-collapse table-auto w-full divide-y divide-primaryHighlight">
+                <!-- Table Header -->
                 <div class="table-header-group">
-                    <div class="table-row  bg-primaryHighlight/50">
-                        <div
-                            class="table-cell px-6 py-3 text-center text-lg font-bold text-white-500 uppercase light:text-neutral-500">
-                            ID</div>
-                        <div
-                            class="table-cell px-6 py-3 text-center text-lg font-bold text-white-500 uppercase light:text-neutral-500">
-                            Created At</div>
-                        <div
-                            class="table-cell px-6 py-3 text-center text-lg font-bold text-white-500 uppercase light:text-neutral-500">
-                            Log</div>
+                    <div class="table-row bg-primaryHighlight/50">
+                        <div class="table-cell px-6 py-3 text-center text-lg font-bold uppercase text-white">
+                            ID
+                        </div>
+                        <div class="table-cell px-6 py-3 text-center text-lg font-bold uppercase text-white">
+                            Created At
+                        </div>
+                        <div class="table-cell px-6 py-3 text-center text-lg font-bold uppercase text-white">
+                            Log
+                        </div>
                     </div>
                 </div>
-                <div class="table-row-group divide-y divide-primaryBg border-b bg-primaryHighlight">
+
+                <!-- Table Body -->
+                <!-- Give this div an ID to target in JS -->
+                <div id="logsTableBody" class="table-row-group divide-y divide-primaryBg border-b bg-primaryHighlight">
                     {% for log in logs %}
                     <div class="table-row">
-                        <div
-                            class="table-cell px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-100">
-                            {{ log.id }}</div>
-                        <div
-                            class="table-cell
-                                px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-100">
-                            {{ log.created_at }}</div>
-                        <div
-                            class="table-cell
-                                px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-100">
-                            {{ log.log }}</div>
+                        <div class="table-cell px-6 py-4 text-sm text-center text-gray-800">
+                            {{ log.id }}
+                        </div>
+                        <div class="table-cell px-6 py-4 text-sm text-center text-gray-800">
+                            {{ log.created_at }}
+                        </div>
+                        <div class="table-cell px-6 py-4 text-sm text-center text-gray-800">
+                            {{ log.log }}
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
+                <!-- End of Table Body -->
             </div>
         </div>
     </div>
@@ -71,25 +73,34 @@
 
 <!-- Pagination Controls -->
 <div id="paginationControls" class="mt-4 flex justify-center items-center space-x-4">
-    <button id="prevPage" class="px-4 py-2 bg-gray-700 text-gray-200 rounded disabled:opacity-50" disabled>Prev</button>
+    <button id="prevPage" class="px-4 py-2 bg-gray-700 text-gray-200 rounded disabled:opacity-50" disabled>
+      Prev
+    </button>
     <span id="pageInfo" class="text-lg">Page 1</span>
-    <button id="nextPage" class="px-4 py-2 bg-gray-700 text-gray-200 rounded">Next</button>
+    <button id="nextPage" class="px-4 py-2 bg-gray-700 text-gray-200 rounded">
+      Next
+    </button>
 </div>
 
 <!-- JavaScript for Pagination -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const rows = document.querySelectorAll('#logsTable tbody tr');
-        const rowsPerPage = 50;
+        // 1) Grab all 'table-row' divs inside #logsTableBody
+        const rows = document.querySelectorAll('#logsTableBody .table-row');
+
+        // 2) Configure pagination
+        const rowsPerPage = 100;   // <--- Show 100 rows per page
         let currentPage = 1;
         const totalPages = Math.ceil(rows.length / rowsPerPage);
 
+        // 3) References to pagination controls
         const prevButton = document.getElementById('prevPage');
         const nextButton = document.getElementById('nextPage');
         const pageInfo = document.getElementById('pageInfo');
 
+        // Helper function to show a specific page
         function showPage(page) {
-            // Validate page number
+            // Clamp page within valid range
             if (page < 1) page = 1;
             if (page > totalPages) page = totalPages;
 
@@ -98,7 +109,7 @@
                 row.classList.add('hidden');
             });
 
-            // Calculate start/end
+            // Calculate start/end indices
             const start = (page - 1) * rowsPerPage;
             const end = start + rowsPerPage;
 
@@ -109,24 +120,29 @@
 
             // Update page info
             pageInfo.innerText = `Page ${page} of ${totalPages}`;
-            prevButton.disabled = page === 1;
-            nextButton.disabled = page === totalPages;
+            prevButton.disabled = (page === 1);
+            nextButton.disabled = (page === totalPages);
 
-            // Update current page
+            // Set current page
             currentPage = page;
         }
 
-        // Show initial page
+        // Show the initial page
         showPage(currentPage);
 
-        // Pagination events
+        // Previous Button
         prevButton.addEventListener('click', function () {
-            if (currentPage > 1) showPage(currentPage - 1);
+            if (currentPage > 1) {
+                showPage(currentPage - 1);
+            }
         });
+
+        // Next Button
         nextButton.addEventListener('click', function () {
-            if (currentPage < totalPages) showPage(currentPage + 1);
+            if (currentPage < totalPages) {
+                showPage(currentPage + 1);
+            }
         });
     });
 </script>
-
 {% endblock content %}

@@ -92,14 +92,17 @@
 
         <!-- Heartbeat / Caution Icons -->
         <div class="relative group">
-          <img src="{% static '9lfK.gif' %}" class="w-20 h-20" id="heartbeat-icon">
-          <!-- Heartbeat Icon -->
-
-            <span
+          <img
+            src="{% static '9lfK.gif' %}"
+            class="w-20 h-20"
+            id="heartbeat-icon"
+          />
+          <!-- Heartbeat Tooltip (initially blank) -->
+          <span
             id="heartbeat-tooltip"
             class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden px-2 py-1 bg-gray-700 text-white text-xs rounded group-hover:block"
           >
-            Backend status
+            <!-- No default text here -->
           </span>
 
           <!-- Caution Icon (Hidden by default) -->
@@ -119,14 +122,6 @@
                  11-18 0 9 9 0 0118 0z"
             />
           </svg>
-
-          <!-- Heartbeat Tooltip -->
-          <span
-            id="heartbeat-tooltip"
-            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden px-2 py-1 bg-gray-700 text-white text-xs rounded group-hover:block"
-          >
-            Checking...
-          </span>
         </div>
 
         <!-- Toggle Button -->
@@ -154,16 +149,16 @@
           <span
             class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden px-2 py-1 bg-gray-700 text-white text-xs rounded group-hover:block"
           >
-            Toggle inference 
+            Toggle inference
           </span>
         </label>
       </div>
     </header>
 
-    <!-- Intrusion Popup (Initially Hidden) -->
+    <!-- Intrusion Popup (smaller & centered) -->
     <div
       id="intrusion-popup"
-      class=" hidden fixed left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-red-700 text-white p-6 rounded shadow-md w-1/2 h-[50vh] text-center flex flex-col justify-center items-center animate-pulse"
+      class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-red-700 text-white p-6 rounded shadow-md w-1/3 h-auto text-center flex flex-col justify-center items-center animate-pulse"
     >
       <p class="mb-4 text-lg font-bold">
         Intrusion has been detected. Click here to resolve.
@@ -195,7 +190,7 @@
       let isToggling = false; // Prevent multiple toggle requests
 
       document.addEventListener("DOMContentLoaded", () => {
-        // Grab references once
+        // Grab references
         const internetIcon = document.getElementById("internet-icon");
         const internetStatus = document.getElementById("internet-status");
         const heartbeatIcon = document.getElementById("heartbeat-icon");
@@ -205,15 +200,7 @@
         const toggleLabel = document.getElementById("toggle-label");
         const intrusionPopup = document.getElementById("intrusion-popup");
         const resolveButton = document.getElementById("resolve-button");
-        const lockdownAudio = document.getElementById("lockdown-audio"); // Audio element
-
-        // Show/Hide Heartbeat Tooltip
-        function showTooltip() {
-          heartbeatTooltip.classList.remove("hidden");
-        }
-        function hideTooltip() {
-          heartbeatTooltip.classList.add("hidden");
-        }
+        const lockdownAudio = document.getElementById("lockdown-audio");
 
         // Check Internet Connection
         async function checkInternetConnection() {
@@ -225,7 +212,6 @@
             });
             if (response) {
               const responseTime = Date.now() - start;
-              // Update UI for successful connection
               internetIcon.classList.remove("text-gray-400", "text-red-500");
               internetIcon.classList.add("text-green-500");
               internetStatus.textContent = `Connected (${responseTime}ms)`;
@@ -235,7 +221,6 @@
               throw new Error("Response not OK");
             }
           } catch (error) {
-            // Update UI for offline status
             internetIcon.classList.remove("text-gray-400", "text-green-500");
             internetIcon.classList.add("text-red-500");
             internetStatus.textContent = "Offline";
@@ -281,7 +266,7 @@
               heartbeatTooltip.innerText = "System is functional";
 
               // Update toggle based on status
-              toggleInput.checked = status === "ACTIVE";
+              toggleInput.checked = (status === "ACTIVE");
               toggleInput.disabled = false;
 
               // Hide intrusion popup if visible
@@ -296,15 +281,11 @@
               heartbeatIcon.classList.add("text-gray-400");
               heartbeatTooltip.innerText = "System is down";
 
-              // Disable toggle switch
               toggleInput.checked = false;
               toggleLabel.innerText = "Inactive";
               toggleInput.disabled = true;
 
-              // Hide intrusion popup
               intrusionPopup.classList.add("hidden");
-
-              // Stop siren if playing
               lockdownAudio.pause();
               lockdownAudio.currentTime = 0;
             }
@@ -313,7 +294,6 @@
 
         // Intrusion Popup Handling
         function showIntrusionPopup(incidentId) {
-          // Show the red popup
           intrusionPopup.classList.remove("hidden");
           resolveButton.onclick = () => {
             window.location.href = `/resolve/${incidentId}`;
@@ -363,24 +343,17 @@
         checkInternetConnection();
 
         // Repeat calls on intervals
-        setInterval(fetchHeartbeat, 1000);      // Heartbeat every second
+        setInterval(fetchHeartbeat, 1000); // Heartbeat every second
         setInterval(checkInternetConnection, 3000); // Connectivity check every 3 seconds
-
-        // Heartbeat tooltip event listeners
-        const heartbeatContainer = heartbeatIcon.parentElement;
-        heartbeatContainer.addEventListener("mouseenter", showTooltip);
-        heartbeatContainer.addEventListener("mouseleave", hideTooltip);
       });
 
-      /**
-       * Toggle Button Function
-       */
+      // Toggle Button
       async function toggleSystemState() {
         if (isToggling) return;
         isToggling = true;
 
         const toggleInput = document.getElementById("status-toggle");
-        toggleInput.disabled = true; // Disable the button to prevent multiple clicks
+        toggleInput.disabled = true;
 
         try {
           const response = await fetch("{% url 'toggle_status' %}", {
