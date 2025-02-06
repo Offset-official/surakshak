@@ -39,7 +39,7 @@ SECRET_KEY = "django-insecure-_6k92yji3ysvkb_7w@9$ggdw8^br+pq(ti=j3us01_12gnpv_1
 DEBUG = True
 
 
-ALLOWED_HOSTS = ["10.1.59.6", "0.0.0.0", "127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["10.1.23.26", "0.0.0.0", "127.0.0.1", "localhost"]
 
 TAILWIND_APP_NAME = "surakshak"
 
@@ -55,7 +55,7 @@ NPM_BIN_PATH = os.getenv("NPM_BIN_PATH")
 
 #     if not NPM_BIN_PATH:
 #         raise FileNotFoundError("NPM binary not found. Please update the paths.")
-NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
+NPM_BIN_PATH = r"/home/jalan/.nvm/versions/node/v22.13.1/bin/npm"
 
 
 # Application definition

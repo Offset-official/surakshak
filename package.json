@@ -8,7 +8,8 @@
     "@tailwindcss/typography": "^0.5.15",
     "concurrently": "^9.1.0",
     "cross-env": "^7.0.3",
-    "postcss-simple-vars": "^7.0.1"
+    "postcss-simple-vars": "^7.0.1",
+    "semver": "^7.7.1",
+    "tailwind": "^4.0.0"
   }
-
 }
