@@ -39,7 +39,7 @@ SECRET_KEY = "django-insecure-_6k92yji3ysvkb_7w@9$ggdw8^br+pq(ti=j3us01_12gnpv_1
 DEBUG = True
 
 
-ALLOWED_HOSTS = ["10.1.59.6", "0.0.0.0", "127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["10.1.23.26", "0.0.0.0", "127.0.0.1", "localhost"]
 
 TAILWIND_APP_NAME = "surakshak"
 
@@ -141,11 +141,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Kolkata"
 
 USE_I18N = True
-
-USE_TZ = True
+USE_L10N = True
+USE_TZ = False
 
 INTERNAL_IPS = ["127.0.0.1", "0.0.0.0", "localhost", "10.1.59.6"]
 

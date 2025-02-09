@@ -4,7 +4,7 @@ import imutils
 import numpy as np
 from surakshak.utils.camera_manager import VideoCamera
 import threading
-from surakshak.utils.models.surakshak_yolo import infer_yolo
+from surakshak.utils.models.surakshak_yolo import infer_yolo11s
 import uuid
 import time
 import surakshak.utils.system_config as system_config
@@ -33,118 +33,97 @@ def frame_generator(camera: VideoCamera):
 
 def intrusion_detector(frame, camera_name):
     """
-    Detects human intrusions in a given frame from a specific camera.
+    Detects human intrusions in a given frame from a specific camera using the modified YOLO script,
+    which already checks boundary coordinates and returns whether lockdown is needed.
 
     Args:
-        frame (numpy.ndarray): The video frame to process.
+        frame (numpy.ndarray): The video frame to process (BGR format).
         camera_name (str): The name of the camera from which the frame is captured.
     """
     logger.info("Running YOLO on suspicious frame...")
-    
-    # Perform YOLO inference to detect objects
-    output_image, outputs = infer_yolo(frame)
-    
+
     # Retrieve the camera instance from the database
     from surakshak.models import Camera
-    
+
     camera = Camera.objects.filter(name=camera_name).first()
-    
+
     if not camera:
         logger.error(f"No camera found with name '{camera_name}'.")
         return  # Early exit if camera is not found
 
-    lockdown_needed = False  # Flag to determine if lockdown is required
-
-    # Check if camera coordinates are defined (all must be non-null)
-    if all([
-        camera.x1 is not None,
-        camera.x2 is not None,
-        camera.y1 is not None,
-        camera.y2 is not None
-    ]):
-        logger.debug("Camera coordinates are defined. Checking detection boundaries.")
-        
-        # Convert coordinates from percentage to ratio (0 to 1)
-        x1_ratio = camera.x1 / 100
-        x2_ratio = camera.x2 / 100
-        y1_ratio = camera.y1 / 100
-        y2_ratio = camera.y2 / 100
-
-        # Iterate through all detected objects to find humans within boundaries
-        for output in outputs:
-            if output.get("object") == "person":
-                coords_ratio = output.get("coords_ratio", {})
-                human_x1 = coords_ratio.get("x1")
-                human_x2 = coords_ratio.get("x2")
-                human_y1 = coords_ratio.get("y1")
-                human_y2 = coords_ratio.get("y2")
-
-                # Validate that coordinates are present
-                if None in [human_x1, human_x2, human_y1, human_y2]:
-                    logger.warning("Incomplete coordinates for detected person. Skipping.")
-                    continue  # Skip incomplete detections
-
-                # Calculate the center point of the detected human
-                human_center_x = (human_x1 + human_x2) / 2
-                human_center_y = (human_y1 + human_y2) / 2
-
-                logger.debug(
-                    f"Detected human center at ({human_center_x}, {human_center_y}) "
-                    f"with boundaries x1={x1_ratio}, x2={x2_ratio}, y1={y1_ratio}, y2={y2_ratio}."
-                )
-
-                # Check if the human center is within the defined boundaries
-                if x1_ratio <= human_center_x <= x2_ratio and y1_ratio <= human_center_y <= y2_ratio:
-                    logger.critical("Human detected within defined boundaries. Initiating lockdown.")
-                    lockdown_needed = True
-                    break  # No need to check further detections
-        else:
-            logger.info("No humans detected within defined boundaries. System is safe.")
+    # Convert camera coordinates (if defined) from percentages to ratios in [0..1]
+    # If any coordinate is missing, we'll pass None to the inference so it treats it as "no boundary defined."
+    if all(
+        [
+            camera.x1 is not None,
+            camera.x2 is not None,
+            camera.y1 is not None,
+            camera.y2 is not None,
+        ]
+    ):
+        x1_ratio = camera.x1 / 100.0
+        x2_ratio = camera.x2 / 100.0
+        y1_ratio = camera.y1 / 100.0
+        y2_ratio = camera.y2 / 100.0
+        logger.debug(
+            f"Using camera boundary ratios: x1={x1_ratio}, x2={x2_ratio}, "
+            f"y1={y1_ratio}, y2={y2_ratio}"
+        )
     else:
-        logger.debug("Camera coordinates are not defined. Any human detection will trigger lockdown.")
-        
-        # Iterate through all detected objects to find any human
-        for output in outputs:
-            if output.get("object") == "person":
-                logger.critical("Human detected without defined boundaries. Initiating lockdown.")
-                lockdown_needed = True
-                break  # No need to check further detections
-        else:
-            logger.info("No humans detected in the frame. System is safe.")
+        logger.debug(
+            "Camera boundary not fully defined. Any detected person triggers lockdown."
+        )
+        x1_ratio = None
+        x2_ratio = None
+        y1_ratio = None
+        y2_ratio = None
+
+    # Now call the modified YOLO inference, which returns:
+    #   (annotated_image, outputs, lockdown_needed)
+    # The boundary check is handled inside the YOLO function.
+    output_image, outputs, lockdown_needed = infer_yolo11s(
+        img=frame,  # or use default if already set in the function
+        conf_thres=0.25,
+        iou_thres=0.7,
+        x1_ratio=x1_ratio,
+        x2_ratio=x2_ratio,
+        y1_ratio=y1_ratio,
+        y2_ratio=y2_ratio,
+    )
 
     # If lockdown is needed, proceed to initiate it
     if lockdown_needed:
         with lockdown_lock:
             # Check if the system is already in lockdown to prevent redundant actions
             if not system_config.SystemConfig.lockdown:
-                logger.info("System is not in lockdown. Proceeding to initiate lockdown.")
-                
+                logger.info(
+                    "Lockdown needed. System is not in lockdown. Proceeding to initiate lockdown."
+                )
+
                 # Encode the output image to JPEG format
-                ret, encoded_image = cv2.imencode('.jpg', output_image)
+                ret, encoded_image = cv2.imencode(".jpg", output_image)
                 if not ret:
                     logger.error("Failed to encode the image for lockdown.")
                     return  # Early exit if encoding fails
-                
+
                 # Create a ContentFile for the image
-                image_content = ContentFile(encoded_image.tobytes(), name=f"{uuid.uuid4()}.jpg")
-                
+                image_content = ContentFile(
+                    encoded_image.tobytes(), name=f"{uuid.uuid4()}.jpg"
+                )
+
                 # Initiate the lockdown process in a separate thread
                 logger.debug("Starting CoordinatorThread to handle lockdown.")
                 coordinator_thread.CoordinatorThread(
-                    system_config.enter_lockdown,
-                    camera_name,
-                    image_content
+                    system_config.enter_lockdown, camera_name, image_content
                 )
             else:
                 logger.info("System is already in lockdown. No action taken.")
     else:
-        logger.debug("Lockdown not required based on current detections.")
+        logger.debug("Lockdown not required based on YOLO detections and boundaries.")
+
 
 def motion_detector(
-    frame_generator,
-    camera_name,
-    stop_event,
-    MIN_SIZE_FOR_MOVEMENT=2000
+    frame_generator, camera_name, stop_event, MIN_SIZE_FOR_MOVEMENT=2000
 ):
     """Detect motion by comparing consecutive frames from a generator.
     If motion is detected, run another model.
@@ -177,7 +156,9 @@ def motion_detector(
         thresh = cv2.dilate(thresh, None, iterations=2)
 
         # Find contours in the thresholded image
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(
+            thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
 
         # Flag to track if motion is detected in this frame
         motion_detected = False
@@ -212,11 +193,15 @@ class CameraInferenceEngine:
         """Start the inference thread if not already running."""
         if not self.is_running:
             self.stop_event.clear()  # Reset the stop event
-            self.thread = threading.Thread(target=self.infer_frames, daemon=True, name="Camera IE " + self.camera.name)
+            self.thread = threading.Thread(
+                target=self.infer_frames,
+                daemon=True,
+                name="Camera IE " + self.camera.name,
+            )
             self.thread.start()
             self.is_running = True
             # logger.info(f"Inference started for camera: {self.name}")
-         # logger.warning(f"Inference already running for camera: {self.name}")
+        # logger.warning(f"Inference already running for camera: {self.name}")
 
     def stop(self):
         """Stop the inference thread if running."""
@@ -225,7 +210,6 @@ class CameraInferenceEngine:
             self.thread.join()  # Wait for the thread to finish
             self.is_running = False
             # logger.info(f"Inference stopped for camera: {self.name}")
-       
 
     def toggle(self):
         """Toggle between starting and stopping the inference."""
@@ -242,14 +226,15 @@ class InferenceEngine:
     @classmethod
     def start(cls):
         from surakshak.utils.camera_manager import CameraManager
+
         if cls.first_init:
             # Initialize the camera inference engines for all cameras
             for items in list(CameraManager._cameras.items()):
                 name, camera = items
                 camera_inference_engine = CameraInferenceEngine(camera, name)
                 cls.camera_inference_engines.append(camera_inference_engine)
-            cls.first_init = False 
-        
+            cls.first_init = False
+
         for engine in cls.camera_inference_engines:
             engine.start()
         logger.info("All inference engines started.")
@@ -261,13 +246,15 @@ class InferenceEngine:
         for engine in cls.camera_inference_engines:
             engine.stop()
         logger.info("All inference engines stopped.")
-    
+
     @classmethod
     def toggle(cls, camera_name=None):
         """Toggle the inference for a specific camera or for all cameras."""
         if camera_name:
             # Find the camera inference engine by name and toggle it
-            engine = next((e for e in cls.camera_inference_engines if e.name == camera_name), None)
+            engine = next(
+                (e for e in cls.camera_inference_engines if e.name == camera_name), None
+            )
             if engine:
                 engine.toggle()
                 # logger.info(f"Toggled inference for camera: {camera_name}")
