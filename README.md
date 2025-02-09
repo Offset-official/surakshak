@@ -44,9 +44,7 @@ In the event of an incident, users can **use remote links** to view snapshot of 
 
 ## **Demos**  
 
-<video src="assets/demo.mp4" width="19209" height="700" controls></video>
-
-
+<video controls src="assets/demo.mp4"></video>
 
 
 ## **Tech Stack**  
