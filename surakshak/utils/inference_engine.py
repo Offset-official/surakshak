@@ -33,16 +33,14 @@ def frame_generator(camera: VideoCamera):
 
 def intrusion_detector(frame, camera_name):
     """
-    Detects human intrusions in a given frame from a specific camera.
+    Detects human intrusions in a given frame from a specific camera using the modified YOLO script,
+    which already checks boundary coordinates and returns whether lockdown is needed.
 
     Args:
-        frame (numpy.ndarray): The video frame to process.
+        frame (numpy.ndarray): The video frame to process (BGR format).
         camera_name (str): The name of the camera from which the frame is captured.
     """
     logger.info("Running YOLO on suspicious frame...")
-
-    # Perform YOLO inference to detect objects
-    output_image, outputs = infer_yolo11s(frame)
 
     # Retrieve the camera instance from the database
     from surakshak.models import Camera
@@ -53,9 +51,8 @@ def intrusion_detector(frame, camera_name):
         logger.error(f"No camera found with name '{camera_name}'.")
         return  # Early exit if camera is not found
 
-    lockdown_needed = False  # Flag to determine if lockdown is required
-
-    # Check if camera coordinates are defined (all must be non-null)
+    # Convert camera coordinates (if defined) from percentages to ratios in [0..1]
+    # If any coordinate is missing, we'll pass None to the inference so it treats it as "no boundary defined."
     if all(
         [
             camera.x1 is not None,
@@ -64,66 +61,35 @@ def intrusion_detector(frame, camera_name):
             camera.y2 is not None,
         ]
     ):
-        logger.debug("Camera coordinates are defined. Checking detection boundaries.")
-
-        # Convert coordinates from percentage to ratio (0 to 1)
-        x1_ratio = camera.x1 / 100
-        x2_ratio = camera.x2 / 100
-        y1_ratio = camera.y1 / 100
-        y2_ratio = camera.y2 / 100
-
-        # Iterate through all detected objects to find humans within boundaries
-        for output in outputs:
-            if output.get("object") == "person":
-                coords_ratio = output.get("coords_ratio", {})
-                human_x1 = coords_ratio.get("x1")
-                human_x2 = coords_ratio.get("x2")
-                human_y1 = coords_ratio.get("y1")
-                human_y2 = coords_ratio.get("y2")
-
-                # Validate that coordinates are present
-                if None in [human_x1, human_x2, human_y1, human_y2]:
-                    logger.warning(
-                        "Incomplete coordinates for detected person. Skipping."
-                    )
-                    continue  # Skip incomplete detections
-
-                # Calculate the center point of the detected human
-                human_center_x = (human_x1 + human_x2) / 2
-                human_center_y = (human_y1 + human_y2) / 2
-
-                logger.debug(
-                    f"Detected human center at ({human_center_x}, {human_center_y}) "
-                    f"with boundaries x1={x1_ratio}, x2={x2_ratio}, y1={y1_ratio}, y2={y2_ratio}."
-                )
-
-                # Check if the human center is within the defined boundaries
-                if (
-                    x1_ratio <= human_center_x <= x2_ratio
-                    and y1_ratio <= human_center_y <= y2_ratio
-                ):
-                    logger.critical(
-                        "Human detected within defined boundaries. Initiating lockdown."
-                    )
-                    lockdown_needed = True
-                    break  # No need to check further detections
-        else:
-            logger.info("No humans detected within defined boundaries. System is safe.")
+        x1_ratio = camera.x1 / 100.0
+        x2_ratio = camera.x2 / 100.0
+        y1_ratio = camera.y1 / 100.0
+        y2_ratio = camera.y2 / 100.0
+        logger.debug(
+            f"Using camera boundary ratios: x1={x1_ratio}, x2={x2_ratio}, "
+            f"y1={y1_ratio}, y2={y2_ratio}"
+        )
     else:
         logger.debug(
-            "Camera coordinates are not defined. Any human detection will trigger lockdown."
+            "Camera boundary not fully defined. Any detected person triggers lockdown."
         )
+        x1_ratio = None
+        x2_ratio = None
+        y1_ratio = None
+        y2_ratio = None
 
-        # Iterate through all detected objects to find any human
-        for output in outputs:
-            if output.get("object") == "person":
-                logger.critical(
-                    "Human detected without defined boundaries. Initiating lockdown."
-                )
-                lockdown_needed = True
-                break  # No need to check further detections
-        else:
-            logger.info("No humans detected in the frame. System is safe.")
+    # Now call the modified YOLO inference, which returns:
+    #   (annotated_image, outputs, lockdown_needed)
+    # The boundary check is handled inside the YOLO function.
+    output_image, outputs, lockdown_needed = infer_yolo11s(
+        img=frame,  # or use default if already set in the function
+        conf_thres=0.25,
+        iou_thres=0.7,
+        x1_ratio=x1_ratio,
+        x2_ratio=x2_ratio,
+        y1_ratio=y1_ratio,
+        y2_ratio=y2_ratio,
+    )
 
     # If lockdown is needed, proceed to initiate it
     if lockdown_needed:
@@ -131,7 +97,7 @@ def intrusion_detector(frame, camera_name):
             # Check if the system is already in lockdown to prevent redundant actions
             if not system_config.SystemConfig.lockdown:
                 logger.info(
-                    "System is not in lockdown. Proceeding to initiate lockdown."
+                    "Lockdown needed. System is not in lockdown. Proceeding to initiate lockdown."
                 )
 
                 # Encode the output image to JPEG format
@@ -153,7 +119,7 @@ def intrusion_detector(frame, camera_name):
             else:
                 logger.info("System is already in lockdown. No action taken.")
     else:
-        logger.debug("Lockdown not required based on current detections.")
+        logger.debug("Lockdown not required based on YOLO detections and boundaries.")
 
 
 def motion_detector(
