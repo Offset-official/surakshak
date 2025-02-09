@@ -74,7 +74,9 @@ def send_call_notification(client, call_url, phone_numbers, from_number="+123456
         client.calls.create(from_=from_number, to=receiver, url=call_url)
 
 
-def send_all_notifs(incident_id, incident_type, phone, email):
+def send_all_notifs(
+    incident_id, incident_type, phone, email, camera_name, camera_location, time
+):
     """
     Sends notifications through all available channels (email, SMS, WhatsApp, and call).
 
@@ -87,8 +89,8 @@ def send_all_notifs(incident_id, incident_type, phone, email):
     try:
         # Prepare common content
         url = reverse("resolve", args=[incident_id])
-        main_text = f"Dear Surakshak,\n\nPlease check out the incident snippet and other information at {url} to resolve the alert as soon as possible.  \n\nRegards, \nInstitution"
-        subject = f"Alert! Incident Type: {incident_type} Detected at {incident_type}"
+        main_text = f"Dear Surakshak,\n\nPlease check out the incident snippet and other information at {url} to resolve the alert as soon as possible. \n\nIncident Type: {incident_type} \nDetected at: {camera_location} \n Detected from Camera: {camera_name} \n Time: {time} \n\nRegards, \nInstitution"
+        subject = f"Alert! Incident Type: {incident_type} Detected at {camera_location} from {camera_name}"
 
         # Initialize Twilio client
         account_sid = os.getenv("TWILIO_ACCOUNT_SID")
