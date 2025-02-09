@@ -1,26 +1,65 @@
-# Intellis
+# **Surakshak**  
 
-## How to run?
-0. These steps work on Python 3.12 (atleast).
-1. Create a venv - `python3 -m venv .venv`
-2. Source the venv - `source .venv/bin/activate` for Linux and `.venv/Scripts/activate` for Windows.
-3. Install dependencies - `pip install -r requirements.txt`
-4. Install node.js and run `npm i`
-5. Run `python3 manage.py makemigrations` and `python3 manage.py migrate`. 
-6. Open 2 terminals. Run `python3 manage.py runserver 0.0.0.0:8000` for running Django in one terminal and run `python3 manage.py tailwind start` for enabling Tailwind with Hot Reload. Access the application on your IP. 
-7. For running the CCTVs, please follow the instructions of `RTSP-server`
+A **smart security system** designed for **institutions** to enhance **surveillance and monitoring**.  
 
-## Wiki
-0. DO NOT NEED TO TOUCH `offset` FOLDER FOR MOST THINGS.
-1. Declare your routes in `surakshak/urls.py` and define the routes in `surakshak/views.py`.
-2. Use the `surakshak/templates/layout.html` as your HTML layout.
-3. Ensure that the docker container is running to host videos via RTSP locally. Please change the `rtsp_url` variable in `surakshak/views` accordingly. Some global hosted RSTP are commented which can be used for testing.
-4. Super user creds: `id: offset` and `pass: offset`
-5. Add your cameras by going to `/admin` in browser. Camera information is stored in the db.
-6. Set `INFERENCE_ENGINE = False` in `settings.py` to disable it.
-7. `print()` is not working in some scripts. Use the following snippet for debugging - 
-```python
-import logging 
-logger = logging.getlogger(__name__)
-logger.info("YOUR DEBUG MESSAGE")
-```     
+## **Problem Statement**  
+Ensuring the **detection and notification** of unauthorized events on school premises using **multiple CCTV feeds**.  
+
+## **Solution**  
+
+### **Intrusion Detection**  
+We utilize a **waterfall algorithm** to detect human intrusion on the premises.  
+
+1. **Frame Differencing**: Detects movement by analyzing differences between consecutive frames.  
+2. **Object Detection**: When suspicious activity is detected, the **YOLO11s model** identifies objects in the frame and notifies the authorities accordingly.  
+
+<img title="Intrusion Detection" src="assets/intrusion.jpeg">  
+
+### **Inference Area Selection**  
+Users can **define custom boundaries** to monitor only specific areas within their institution, reducing unnecessary alerts.  
+
+<img title="Inference Area Selection" src="assets/area_selection.jpeg">  
+
+### **Automatic Scheduler**  
+The system allows users to **schedule active hours** when surveillance should be disabled, ensuring that monitoring is paused during institution working hours.  
+
+<img title="Scheduler" src="assets/scheduler.jpeg">  
+
+### **Real-time Notifications**  
+Users can customize **notification preferences** and select specific events for alerts. **Respondents receive a secure URL** with incident details, enabling them to take immediate action.  
+
+<img title="Notifications" src="assets/notification.png">
+
+### **Remote Incident Resolution**
+In the event of an incident, users can **use remote links** to view snapshot of the incident, communicate with on-site personnel, and resolve the situation.
+
+<img title="Remote Incident Resolution" src="assets/resolution.png">
+
+## **Key Features**  
+✔️ **Human Intrusion Detection**  
+✔️ **Customizable Inference Area**  
+✔️ **Automated Scheduling**  
+✔️ **Real-time Alerts with Remote Access**  
+✔️ **Incident Resolution via Remote Interface**  
+
+## **Demos**  
+
+<video controls src="assets/demo.mp4"></video>
+
+
+## **Tech Stack**  
+- **Django** – Backend framework  
+- **Python** – Core programming language  
+- **Twilio** – SMS & Call Notifications  
+- **Tailwind** – UI Styling  
+- **OpenCV** – Computer Vision Processing  
+- **Ultralytics** – YOLO-based Object Detection  
+
+## **Upcoming Features**  
+🔹 **Additional event detection** (e.g., fights, unattended objects)  
+🔹 **Remote system maintenance and monitoring**  
+🔹 **Facial recognition** for authorized personnel  
+🔹 **Integration with local law enforcement** for high-priority incidents  
+
+## **Credits**  
+**Offset 2025. All rights reserved.**  
