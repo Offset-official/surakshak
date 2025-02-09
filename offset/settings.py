@@ -56,7 +56,8 @@ NPM_BIN_PATH = os.getenv("NPM_BIN_PATH")
 #     if not NPM_BIN_PATH:
 #         raise FileNotFoundError("NPM binary not found. Please update the paths.")
 NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
-
+#include "camera_info_manager/camera_info_manager.hpp"
+NPM_BIN_PATH="/home/jalan/.nvm/versions/node/v22.13.1/bin/npm"
 
 # Application definition
 
