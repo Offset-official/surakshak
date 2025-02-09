@@ -25,6 +25,7 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_ROOT = os.path.join(BASE_DIR, "surakshak/media")
@@ -37,6 +38,7 @@ SECRET_KEY = "django-insecure-_6k92yji3ysvkb_7w@9$ggdw8^br+pq(ti=j3us01_12gnpv_1
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
 
 
 ALLOWED_HOSTS = ["10.1.23.26", "0.0.0.0", "127.0.0.1", "localhost"]

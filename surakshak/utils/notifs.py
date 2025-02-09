@@ -2,6 +2,7 @@ from django.core.mail import send_mail
 from django.urls import reverse
 from twilio.rest import Client
 import os
+import socket
 
 
 def send_email_notification(
@@ -88,7 +89,11 @@ def send_all_notifs(
     """
     try:
         # Prepare common content
-        url = reverse("resolve", args=[incident_id])
+        try:
+            machine_ip = socket.gethostbyname(socket.gethostname())
+        except socket.error:
+            machine_ip = "127.0.0.1"
+        url = f"http://{machine_ip}{reverse('resolve', args=[incident_id])}"
         main_text = f"Dear Surakshak,\n\nPlease check out the incident snippet and other information at {url} to resolve the alert as soon as possible. \n\nIncident Type: {incident_type} \nDetected at: {camera_location} \nDetected from Camera: {camera_name} \nTime: {time} \n\nRegards, \nInstitution"
         subject = f"Alert! Incident Type: {incident_type} Detected at {camera_location} from {camera_name}"
 
