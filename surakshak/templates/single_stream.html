@@ -2,14 +2,14 @@
 
 {% block content %}
 <div class="max-w-4xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6">CCTV Feed: {{ camera_name }}</h1>
+    <h1 class="text-3xl font-bold mb-6 text-center">CCTV Feed: {{ camera_name }}</h1>
+    <a href="{% url 'stream_page' %}" class="text-accent hover:underline text-xl">
+        ← Back to Streams
+    </a> 
     <div class="flex justify-center">
         <img src="{% url 'video_feed' camera_name=camera_name %}" alt="CCTV {{ camera_name }} Feed" class="w-full max-w-3xl h-auto border rounded">
     </div>
     <div class="mt-6 text-center flex flex-col items-center gap-4">
-        <a href="{% url 'stream_page' %}" class="text-blue-500 hover:underline">
-            ← Back to Streams
-        </a> 
         <a href="{% url 'adjust_camera' camera_name=camera_name %}" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 transition">
             Adjust Camera
         </a>

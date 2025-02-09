@@ -55,7 +55,7 @@ NPM_BIN_PATH = os.getenv("NPM_BIN_PATH")
 
 #     if not NPM_BIN_PATH:
 #         raise FileNotFoundError("NPM binary not found. Please update the paths.")
-NPM_BIN_PATH = r"/home/jalan/.nvm/versions/node/v22.13.1/bin/npm"
+NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
 
 
 # Application definition
@@ -141,11 +141,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Kolkata"
 
 USE_I18N = True
-
-USE_TZ = True
+USE_L10N = True
+USE_TZ = False
 
 INTERNAL_IPS = ["127.0.0.1", "0.0.0.0", "localhost", "10.1.59.6"]
 

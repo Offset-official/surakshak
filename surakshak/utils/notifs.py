@@ -89,7 +89,7 @@ def send_all_notifs(
     try:
         # Prepare common content
         url = reverse("resolve", args=[incident_id])
-        main_text = f"Dear Surakshak,\n\nPlease check out the incident snippet and other information at {url} to resolve the alert as soon as possible. \n\nIncident Type: {incident_type} \nDetected at: {camera_location} \n Detected from Camera: {camera_name} \n Time: {time} \n\nRegards, \nInstitution"
+        main_text = f"Dear Surakshak,\n\nPlease check out the incident snippet and other information at {url} to resolve the alert as soon as possible. \n\nIncident Type: {incident_type} \nDetected at: {camera_location} \nDetected from Camera: {camera_name} \nTime: {time} \n\nRegards, \nInstitution"
         subject = f"Alert! Incident Type: {incident_type} Detected at {camera_location} from {camera_name}"
 
         # Initialize Twilio client
