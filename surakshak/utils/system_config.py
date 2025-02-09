@@ -3,7 +3,6 @@ import time
 import datetime
 import logging
 import surakshak.utils.inference_engine as inference_engine
-from django.core.files import File
 from surakshak.utils.notifs import send_all_notifs
 from surakshak.utils.logs import MyHandler
 
@@ -102,7 +101,7 @@ def state_switch(InferenceSchedule):
 
 def enter_lockdown(camera_name, file_obj):
     print("ENTERING LOCKDOWN MODE.")
-    from surakshak.models import Incident, IncidentType
+    from surakshak.models import Incident, IncidentType, Camera
 
     SystemConfig.lockdown = True  # will disable toggle switch and periodic state switch, boot config is not a problem
     SystemConfig.instrusion_state = "INACTIVE"  # for system consistency
@@ -122,6 +121,7 @@ def enter_lockdown(camera_name, file_obj):
     respondents = (
         IncidentType.objects.filter(type_name="Trespassing").first().respondents.all()
     )
+    camera_location = Camera.objects.filter(name=camera_name).first().location
     for respondent in respondents:
         if respondent.is_active:
             send_all_notifs(
@@ -129,6 +129,9 @@ def enter_lockdown(camera_name, file_obj):
                 incident_type="Trespassing",
                 phone=respondent.phone,
                 email=respondent.email,
+                camera_name=camera_name,
+                camera_location=camera_location,
+                time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             )
 
 

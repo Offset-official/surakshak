@@ -5,11 +5,11 @@
 <div class="flex flex-wrap justify-between">
     {% for cctv in cctvs %}
     <div class="w-[30%]">
-        <h1>CCTV Feed {{ cctv }}</h1>
         <!-- Make the image clickable by wrapping it in an <a> tag -->
-        <a href="{% url 'single_stream_page' camera_name=cctv %}">
-            <img src="{% url 'video_feed' camera_name=cctv %}" alt="CCTV {{ cctv }} Feed" class="cursor-pointer">
-        </a>
+            <a href="{% url 'single_stream_page' camera_name=cctv %}">
+                <img src="{% url 'video_feed' camera_name=cctv %}" alt="CCTV {{ cctv }} Feed" class="cursor-pointer">
+            </a>
+            <h1 class="text-center font-bold capitalize text-xl ">{{ cctv }}</h1>
     </div>
     {% endfor %}
 </div>

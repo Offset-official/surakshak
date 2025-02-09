@@ -7,3 +7,4 @@ numpy
 django-widget-tweaks
 djangorestframework
 python-dotenv
+openvino
