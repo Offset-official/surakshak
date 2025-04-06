@@ -24,13 +24,13 @@ class VideoCamera:
             if not self.video.isOpened():
                 logger.info(f"Attempting to reconnect to {self.rtsp_url}")
                 self.video = cv2.VideoCapture(self.rtsp_url)
-                time.sleep(5)  # Wait before retrying
+                time.sleep(0.1)  # Wait before retrying
 
             ret, image = self.video.read() # this will wait till next frame
             if ret:
                 with self.lock:
                     self.frame = image
-                time.sleep(0.1) # limits to 10 FPS
+                time.sleep(0.03) # limits to 30 FPS
             else:
                 logger.info(f"Failed to read frame from {self.rtsp_url}")
                 self.video.release()

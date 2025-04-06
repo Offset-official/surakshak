@@ -123,7 +123,7 @@ def intrusion_detector(frame, camera_name):
 
 
 def motion_detector(
-    frame_generator, camera_name, stop_event, MIN_SIZE_FOR_MOVEMENT=1000
+    frame_generator, camera_name, stop_event, MIN_SIZE_FOR_MOVEMENT=400
 ):
     """Detect motion by comparing consecutive frames from a generator.
     If motion is detected, run another model.
@@ -187,10 +187,10 @@ class CameraInferenceEngine:
 
     def infer_frames(self):
         """This function runs the motion detector and initiates the inference loop."""
-        time.sleep(5)  # Give time for the camera to stabilize
+        time.sleep(1)  # Give time for the camera to stabilize
         # warmup for yolo
         infer_yolo11s(
-            img=np.zeros((640, 640)),  # or use default if already set in the function
+            img=np.zeros((640, 640, 3)),  # or use default if already set in the function
             conf_thres=0.25,
             iou_thres=0.7)
         motion_detector(frame_generator(self.camera), self.name, self.stop_event)
